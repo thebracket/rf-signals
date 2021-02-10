@@ -1,0 +1,17 @@
+[package]
+name = "rf-signals"
+version = "0.1.0"
+authors = ["Herbert Wolverson <herberticus@gmail.com>"]
+edition = "2018"
+description = "Rust wrapper for https://github.com/Cloud-RF/Signal-Server signal algorithms."
+readme = "README.md"
+license = "GPL2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+
+[build-dependencies]
+bindgen = "0.52.0"
+cc = "1.0.61"
