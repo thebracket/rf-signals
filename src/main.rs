@@ -3,5 +3,5 @@ use rf_signal_algorithms::*;
 fn main() {
     println!("Workspace root.");
 
-    println!("{}", free_space_path_loss_db(5800.0, 10000.0));
+    println!("{}", fresnel_radius(1000.0, 1000.0, 2437.0));
 }

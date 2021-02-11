@@ -4,6 +4,8 @@ pub use itwom3::{
 };
 mod fspl;
 pub use fspl::free_space_path_loss_db;
+mod fresnel;
+pub use fresnel::fresnel_radius;
 
 // Include the C library for use in child modules.
 mod c {

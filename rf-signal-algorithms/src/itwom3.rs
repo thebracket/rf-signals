@@ -318,16 +318,21 @@ mod test {
 
         let itwom_test = ItwomPointToPoint(
             &mut terrain_path,
-            PTPClimate::default(), 
+            PTPClimate::default(),
             5800.0,
             0.5,
             0.5,
-            1
+            1,
         );
 
         assert_eq!(itwom_test.mode, "L-o-S");
         assert_eq!(itwom_test.error_num, 0);
-        assert!(approx_eq!(f64, itwom_test.dbloss, 113.65156617174829, ulps = 2));
+        assert!(approx_eq!(
+            f64,
+            itwom_test.dbloss,
+            113.65156617174829,
+            ulps = 2
+        ));
     }
 
     #[test]
@@ -338,11 +343,11 @@ mod test {
 
         let itwom_test = ItwomPointToPoint(
             &mut terrain_path,
-            PTPClimate::default(), 
+            PTPClimate::default(),
             5800.0,
             0.5,
             0.5,
-            1
+            1,
         );
 
         assert_eq!(itwom_test.mode, "1_Hrzn_Diff");
@@ -358,11 +363,11 @@ mod test {
 
         let itwom_test = ItwomPointToPoint(
             &mut terrain_path,
-            PTPClimate::default(), 
+            PTPClimate::default(),
             5800.0,
             0.5,
             0.5,
-            1
+            1,
         );
 
         assert_eq!(itwom_test.mode, "2_Hrzn_Diff");
