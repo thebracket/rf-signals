@@ -18,6 +18,7 @@ fn main() {
         // The input header we would like to generate
         // bindings for.
         .header("c/itwom3.0.hh")
+        .header("c/cost.hh")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
@@ -35,5 +36,6 @@ fn main() {
     // Build the C++ library
     cc::Build::new()
         .file("c/itwom3.0.cc")
+        .file("c/cost.cc")
         .compile("libsignals.a");
 }
