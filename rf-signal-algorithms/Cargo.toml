@@ -1,5 +1,5 @@
 [package]
-name = "rf-signals"
+name = "rf-signal-algorithms"
 version = "0.1.0"
 authors = ["Herbert Wolverson <herberticus@gmail.com>"]
 edition = "2018"
@@ -7,10 +7,11 @@ description = "Rust wrapper for https://github.com/Cloud-RF/Signal-Server signal
 readme = "README.md"
 license = "GPL2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-rf-signal-algorithms = { path = "rf-signal-algorithms/" }
 
-[workspace]
-members = [ "rf-signal-algorithms" ]
+[dev-dependencies]
+float-cmp = "0.8"
+
+[build-dependencies]
+bindgen = "0.57.0"
+cc = "1.0.66"

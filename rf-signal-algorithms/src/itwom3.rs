@@ -103,10 +103,19 @@ fn PointToPoint(
     }
 }
 
+#[derive(Debug)]
 pub struct PTPResult {
     pub dbloss: f64,
     pub mode: String,
     pub error_num: i32,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum PTPError {
+    DistanceTooShort,
+    DistanceTooLong,
+    AltitudeTooHigh,
+    AltitudeTooLow,
 }
 
 /// Describes terrain for an IWOM Point-To-Point path.
@@ -116,24 +125,45 @@ pub struct PTPResult {
 pub struct PTPPath {
     elevations: Vec<f64>,
     transmit_height: f64,
-    receive_height: f64
+    receive_height: f64,
 }
 
 impl PTPPath {
     /// Construct a new PTP path for ITWOM evaluation. The constructor takes care of pre-pending the fields
     /// used by the C algorithm.
-    pub fn new(elevations: Vec<f64>, transmit_height: f64, receive_height: f64, step_size_meters: f64) -> Self {
+    pub fn new(
+        elevations: Vec<f64>,
+        transmit_height: f64,
+        receive_height: f64,
+        step_size_meters: f64,
+    ) -> Result<Self, PTPError> {
+        let total_distance: f64 = elevations.len() as f64 * step_size_meters;
+        if total_distance < 1000.0 {
+            return Err(PTPError::DistanceTooShort);
+        } else if total_distance > 2000000.0 {
+            return Err(PTPError::DistanceTooLong);
+        }
+
+        for a in &elevations {
+            if *a < 0.5 {
+                return Err(PTPError::AltitudeTooLow);
+            } else if *a > 3000.0 {
+                return Err(PTPError::AltitudeTooHigh);
+            }
+        }
+
         let mut path = Self {
             elevations,
             transmit_height,
-            receive_height
+            receive_height,
         };
 
         // Index 0 is the number of elements, next up is the distance per step
         path.elevations.insert(0, step_size_meters);
-        path.elevations.insert(0, path.elevations.len() as f64 - 3.0);
+        path.elevations
+            .insert(0, path.elevations.len() as f64 - 3.0);
 
-        path
+        Ok(path)
     }
 }
 
@@ -142,30 +172,46 @@ pub struct PTPClimate {
     eps_dialect: f64,
     sgm_conductivity: f64,
     eno_ns_surfref: f64,
-    radio_climate: i32
+    radio_climate: i32,
 }
 
 pub enum GroundConductivity {
-    SaltWater, GoodGround, FreshWater, MarshyLand, Farmland, Forest, AverageGround, Mountain, Sand, City, PoorGround
+    SaltWater,
+    GoodGround,
+    FreshWater,
+    MarshyLand,
+    Farmland,
+    Forest,
+    AverageGround,
+    Mountain,
+    Sand,
+    City,
+    PoorGround,
 }
 
 pub enum RadioClimate {
-    Equatorial, ContinentalSubtropical, MaritimeSubtropical, Desert, ContinentalTemperate, MaritimeTemperateLand, MaritimeTemperateSea
+    Equatorial,
+    ContinentalSubtropical,
+    MaritimeSubtropical,
+    Desert,
+    ContinentalTemperate,
+    MaritimeTemperateLand,
+    MaritimeTemperateSea,
 }
 
 impl PTPClimate {
     pub fn default() -> Self {
         Self {
-            eps_dialect : 15.0,
+            eps_dialect: 15.0,
             sgm_conductivity: 0.005,
             eno_ns_surfref: 301.0,
-            radio_climate: 5
+            radio_climate: 5,
         }
     }
 
     pub fn new(ground: GroundConductivity, climate: RadioClimate) -> Self {
         Self {
-            eps_dialect : match ground {
+            eps_dialect: match ground {
                 GroundConductivity::SaltWater => 80.0,
                 GroundConductivity::GoodGround => 25.0,
                 GroundConductivity::FreshWater => 80.0,
@@ -200,7 +246,7 @@ impl PTPClimate {
                 RadioClimate::ContinentalTemperate => 5,
                 RadioClimate::MaritimeTemperateLand => 6,
                 RadioClimate::MaritimeTemperateSea => 7,
-            }
+            },
         }
     }
 }
@@ -213,7 +259,8 @@ pub fn ItwomPointToPoint(
     rel: f64,
     polarity: i32,
 ) -> PTPResult {
-    PointToPoint(&mut path.elevations,
+    PointToPoint(
+        &mut path.elevations,
         path.transmit_height,
         path.receive_height,
         climate.eps_dialect,
@@ -223,6 +270,102 @@ pub fn ItwomPointToPoint(
         climate.radio_climate,
         polarity,
         confidence,
-        rel
+        rel,
     )
+}
+
+#[cfg(test)]
+mod test {
+    use float_cmp::approx_eq;
+
+    use super::*;
+
+    #[test]
+    fn test_too_short() {
+        assert_eq!(
+            PTPPath::new(vec![1.0; 2], 100.0, 100.0, 10.0).err(),
+            Some(PTPError::DistanceTooShort)
+        );
+    }
+
+    #[test]
+    fn test_too_long() {
+        assert_eq!(
+            PTPPath::new(vec![1.0; 2000000], 100.0, 100.0, 10.0).err(),
+            Some(PTPError::DistanceTooLong)
+        );
+    }
+
+    #[test]
+    fn altitudes_too_low() {
+        assert_eq!(
+            PTPPath::new(vec![0.4; 200], 100.0, 100.0, 10.0).err(),
+            Some(PTPError::AltitudeTooLow)
+        );
+    }
+
+    #[test]
+    fn altitudes_too_high() {
+        assert_eq!(
+            PTPPath::new(vec![3500.0; 200], 100.0, 100.0, 10.0).err(),
+            Some(PTPError::AltitudeTooHigh)
+        );
+    }
+
+    #[test]
+    fn basic_fspl_test() {
+        let mut terrain_path = PTPPath::new(vec![1.0; 200], 100.0, 100.0, 10.0).unwrap();
+
+        let itwom_test = ItwomPointToPoint(
+            &mut terrain_path,
+            PTPClimate::default(), 
+            5800.0,
+            0.5,
+            0.5,
+            1
+        );
+
+        assert_eq!(itwom_test.mode, "L-o-S");
+        assert_eq!(itwom_test.error_num, 0);
+        assert!(approx_eq!(f64, itwom_test.dbloss, 113.65156617174829, ulps = 2));
+    }
+
+    #[test]
+    fn basic_one_obstruction() {
+        let mut elevations = vec![1.0; 200];
+        elevations[100] = 110.0;
+        let mut terrain_path = PTPPath::new(elevations, 100.0, 100.0, 10.0).unwrap();
+
+        let itwom_test = ItwomPointToPoint(
+            &mut terrain_path,
+            PTPClimate::default(), 
+            5800.0,
+            0.5,
+            0.5,
+            1
+        );
+
+        assert_eq!(itwom_test.mode, "1_Hrzn_Diff");
+        assert_eq!(itwom_test.error_num, 0);
+    }
+
+    #[test]
+    fn basic_two_obstructions() {
+        let mut elevations = vec![1.0; 200];
+        elevations[100] = 110.0;
+        elevations[150] = 110.0;
+        let mut terrain_path = PTPPath::new(elevations, 100.0, 100.0, 10.0).unwrap();
+
+        let itwom_test = ItwomPointToPoint(
+            &mut terrain_path,
+            PTPClimate::default(), 
+            5800.0,
+            0.5,
+            0.5,
+            1
+        );
+
+        assert_eq!(itwom_test.mode, "2_Hrzn_Diff");
+        assert_eq!(itwom_test.error_num, 0);
+    }
 }

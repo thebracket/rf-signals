@@ -1,5 +1,7 @@
 mod itwom3;
-pub use itwom3::{PTPPath, PTPClimate, GroundConductivity, RadioClimate, PTPResult, ItwomPointToPoint};
+pub use itwom3::{
+    GroundConductivity, ItwomPointToPoint, PTPClimate, PTPPath, PTPResult, RadioClimate,
+};
 
 // Include the C library for use in child modules.
 mod c {
