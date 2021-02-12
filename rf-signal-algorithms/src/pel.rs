@@ -1,10 +1,11 @@
-
-/*
-Plane Earth Loss model 
-Frequency: N/A
-Distance (km): Any
-*/
-// Plane earth loss is independent of frequency.
+/// Plane Earth Model
+/// Original C implementation: https://github.com/Cloud-RF/Signal-Server/blob/master/models/pel.cc
+/// Taken from "Antennas and Propagation for wireless communication systems"  *
+/// ISBN 978-0-470-84879-1 (by Alex Farrant)
+///
+/// Distance (meters) is unbounded.
+/// Frequency is not used in this calculation.
+/// Transmitter height and receiver height are height AMSL.
 pub fn plane_earth_path_loss(
     tx_height_m: f64,
     rx_height_m: f64,
