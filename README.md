@@ -13,7 +13,7 @@ I've retained the GPL2 license, because the parent requires it. I needed this fo
 |EGLI        |C Only   |
 |Fresnel Zone|Pure Rust (not in original)|
 |FSPL        |Pure Rust|
-|HATA        |C Only   |
+|HATA        |Ported to Pure Rust|
 |ITWOM3      |C Only   |
 |Plane Earth |Ported to Pure Rust|
 |SOIL        |Ported to Pure Rust|
