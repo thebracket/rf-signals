@@ -10,6 +10,8 @@ mod cost_hata;
 pub use cost_hata::cost_path_loss;
 mod ecc33;
 pub use ecc33::ecc33_path_loss;
+mod egli;
+pub use egli::egli_path_loss;
 
 // Include the C library for use in child modules.
 mod c {
