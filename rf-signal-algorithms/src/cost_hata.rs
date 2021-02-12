@@ -14,13 +14,13 @@ pub fn cost_path_loss(
     tx_height: Distance,
     rx_height: Distance,
     distance: Distance,
-    mode: i32,
+    mode: EstimateMode,
 ) -> f64 {
     let f = frequency.as_mhz();
     let TxH = tx_height.as_meters();
     let RxH = rx_height.as_meters();
     let d = distance.as_km();
-    //let mode = mode.to_mode();
+    let mode = mode.to_mode();
 
     let mut C = 3.0; // 3dB for Urban
     let mut lRxH = (11.75 * RxH).log10();
@@ -45,47 +45,4 @@ pub fn cost_path_loss(
         + (44.9 - 6.55 * TxH.log10()) * d.log10()
         + C;
     return dbloss;
-}
-
-#[cfg(test)]
-mod test {
-    use crate::{c::COST231pathLoss, cost_path_loss, Distance, Frequency};
-    use float_cmp::approx_eq;
-
-    #[test]
-    fn test_c_port() {
-        for f in 30..1000 {
-            for tx in 1..20 {
-                for rx in 1..20 {
-                    for d in 1..50 {
-                        for mode in 1..3 {
-                            let f = Frequency::with_mhz(f);
-                            let tx = Distance::with_meters(tx);
-                            let rx = Distance::with_meters(rx);
-                            let d = Distance::with_kilometers(d);
-
-                            let c = unsafe {
-                                COST231pathLoss(
-                                    f.as_mhz() as f32,
-                                    tx.as_meters() as f32,
-                                    rx.as_meters() as f32,
-                                    d.as_km() as f32,
-                                    mode,
-                                )
-                            };
-
-                            let r = cost_path_loss(f, tx, rx, d, mode);
-
-                            assert!(
-                                approx_eq!(f32, c as f32, r as f32, ulps = 4),
-                                "C={}, R={}",
-                                c,
-                                r
-                            );
-                        }
-                    }
-                }
-            }
-        }
-    }
 }

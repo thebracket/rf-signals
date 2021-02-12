@@ -16,7 +16,7 @@ fn main() {
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
-            1
+            EstimateMode::Urban
         )
     );
     println!(
@@ -26,7 +26,7 @@ fn main() {
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
-            2
+            EstimateMode::Suburban
         )
     );
     println!(
@@ -36,7 +36,7 @@ fn main() {
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
-            3
+            EstimateMode::Rural
         )
     );
     println!(
