@@ -45,6 +45,14 @@ fn main() {
         "Plane Earth     : {}",
         plane_earth_path_loss(XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS)
     );
+    for t in 0..=15 {
+        println!(
+            "Soil Mode {}   : {}",
+            t,
+            soil_path_loss(FREQ_MHZ, DISTANCE_METERS, t as f32)
+        );
+    }
+
     println!(
         "Free Space Loss : {}",
         free_space_path_loss_db(FREQ_MHZ as f64, DISTANCE_METERS as f64)
