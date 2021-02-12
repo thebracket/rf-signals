@@ -54,15 +54,15 @@ fn main() {
     }
     println!(
         "SUI Mode 1      : {}",
-        sui_path_loss(FREQ_MHZ as f64, XMIT_HEIGHT as f64, RECV_HEIGHT as f64, DISTANCE_METERS as f64, 1)
+        sui_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(XMIT_HEIGHT), Distance::with_meters(RECV_HEIGHT), Distance::with_meters(DISTANCE_METERS), 1)
     );
     println!(
         "SUI Mode 2      : {}",
-        sui_path_loss(FREQ_MHZ as f64, XMIT_HEIGHT as f64, RECV_HEIGHT as f64, DISTANCE_METERS as f64, 2)
+        sui_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(XMIT_HEIGHT), Distance::with_meters(RECV_HEIGHT), Distance::with_meters(DISTANCE_METERS), 2)
     );
     println!(
         "SUI Mode 3      : {}",
-        sui_path_loss(FREQ_MHZ as f64, XMIT_HEIGHT as f64, RECV_HEIGHT as f64, DISTANCE_METERS as f64, 3)
+        sui_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(XMIT_HEIGHT), Distance::with_meters(RECV_HEIGHT), Distance::with_meters(DISTANCE_METERS), 3)
     );
     println!(
         "Free Space Loss : {}",
