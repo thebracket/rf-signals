@@ -21,7 +21,31 @@ pub use pel::plane_earth_path_loss;
 mod soil;
 pub use soil::soil_path_loss;
 mod sui;
-pub use sui::{sui_path_loss, SuiMode};
+pub use sui::sui_path_loss;
+
+/// Defines the calculation more for SUI, HATA, etc. path loss
+#[derive(Debug, PartialEq)]
+pub enum EstimateMode {
+    Urban,
+    Obstructed,
+    Suburban,
+    PartiallyObstructed,
+    Rural,
+    Open,
+}
+
+impl EstimateMode {
+    fn to_mode(&self) -> i32 {
+        match self {
+            EstimateMode::Urban => 1,
+            EstimateMode::Obstructed => 1,
+            EstimateMode::Suburban => 2,
+            EstimateMode::PartiallyObstructed => 2,
+            EstimateMode::Rural => 3,
+            EstimateMode::Open => 3,
+        }
+    }
+}
 
 // Include the C library for use in child modules.
 mod c {

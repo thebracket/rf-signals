@@ -1,15 +1,9 @@
+use crate::{Distance, EstimateMode, Frequency};
 use std::f64::consts::PI;
-use crate::{Distance, Frequency};
-
-/// Defines the calculation more for SUI path loss
-#[derive(Debug, PartialEq)]
-pub enum SuiMode {
-    Urban, Obstructed, Suburban, PartiallyObstructed, Rural, Open
-}
 
 #[derive(Debug, PartialEq)]
 pub enum SuiError {
-    FrequencyOutOfRange
+    FrequencyOutOfRange,
 }
 
 /// Calculates SUI path loss.
@@ -23,19 +17,12 @@ pub fn sui_path_loss(
     tx_height: Distance,
     rx_height: Distance,
     distance: Distance,
-    mode: SuiMode,
+    mode: EstimateMode,
 ) -> Result<f64, SuiError> {
-    let mode = match mode {
-        SuiMode::Urban => 1,
-        SuiMode::Obstructed => 1,
-        SuiMode::Suburban => 2,
-        SuiMode::PartiallyObstructed => 2,
-        SuiMode::Rural => 3,
-        SuiMode::Open => 3
-    };
+    let mode = mode.to_mode();
     let d = distance.as_meters();
     let f = frequency.as_mhz();
-    if f < 1900.0|| f > 11000.0 {
+    if f < 1900.0 || f > 11000.0 {
         return Err(SuiError::FrequencyOutOfRange);
     }
     let txh = tx_height.as_meters();
@@ -46,13 +33,15 @@ pub fn sui_path_loss(
     let s = 8.2;
     let mut xhcf = -10.8;
 
-    if mode == 2 { // Suburban
+    if mode == 2 {
+        // Suburban
         a = 4.0;
         b = 0.0065;
         c = 17.1;
         xhcf = -10.8;
     }
-    if mode == 3 { // Rural
+    if mode == 3 {
+        // Rural
         a = 3.6;
         b = 0.005;
         c = 20.0;
@@ -60,7 +49,7 @@ pub fn sui_path_loss(
     }
 
     let d0 = 100.0;
-    let big_a = 20.0 * ( ( 4.0 * PI * d0 ) / ( 300.0 / f) ).log10();
+    let big_a = 20.0 * ((4.0 * PI * d0) / (300.0 / f)).log10();
     let y = a - (b * txh) + (c / txh);
     let mut xf = 0.0;
     let mut xh = 0.0;
