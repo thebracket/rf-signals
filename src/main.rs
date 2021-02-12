@@ -23,7 +23,13 @@ fn main() {
     );
     println!(
         "ECC33 Mode 1    : {}",
-        ecc33_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 1)
+        ecc33_path_loss(
+            Frequency::with_mhz(FREQ_MHZ),
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS),
+            1
+        )
     );
     println!(
         "EGLI            : {}",
@@ -32,7 +38,8 @@ fn main() {
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
-        ).unwrap()
+        )
+        .unwrap()
     );
     println!(
         "HATA Mode 1     : {}",

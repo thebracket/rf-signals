@@ -4,7 +4,7 @@ use crate::{Distance, Frequency};
 pub enum EgliError {
     FrequencyOutOfRange,
     InvalidHeight,
-    DistanceOutOfRange
+    DistanceOutOfRange,
 }
 
 /// EGLI Path Loss Calculation
