@@ -1,3 +1,5 @@
+use crate::Distance;
+
 /// Plane Earth Model
 /// Original C implementation: https://github.com/Cloud-RF/Signal-Server/blob/master/models/pel.cc
 /// Taken from "Antennas and Propagation for wireless communication systems"  *
@@ -9,8 +11,8 @@
 pub fn plane_earth_path_loss(
     tx_height_m: f64,
     rx_height_m: f64,
-    distance_m: f64,
+    distance: Distance,
 ) -> f64 {
-    let d = distance_m / 1000.0; // Km
+    let d = distance.as_km();
     (40.0 * d.log10()) + (20.0 * tx_height_m.log10()) + (20.0 * rx_height_m.log10())
 }

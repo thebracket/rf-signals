@@ -1,3 +1,5 @@
+mod units;
+pub use units::Distance;
 mod itwom3;
 pub use itwom3::{
     GroundConductivity, ItwomPointToPoint, PTPClimate, PTPPath, PTPResult, RadioClimate,
