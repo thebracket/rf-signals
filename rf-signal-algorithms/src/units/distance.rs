@@ -4,24 +4,28 @@ pub struct Distance(pub f64);
 
 impl Distance {
     /// Specify a distance in meters
-    pub fn with_meters<T: Into<f64>>(meters: T) -> Self
-    {
-        Self( meters.into() )
+    pub fn with_meters<T: Into<f64>>(meters: T) -> Self {
+        Self(meters.into())
     }
 
     /// Specify a distance in km
     pub fn with_kilometers<T: Into<f64>>(km: T) -> Self {
-        Self( km.into() * 1000.0 )
+        Self(km.into() * 1000.0)
     }
 
     /// Specify a distance in feet
     pub fn with_feet<T: Into<f64>>(feet: T) -> Self {
-        Self(feet.into() * 0.3048 )
+        Self(feet.into() * 0.3048)
     }
 
     /// Specify a distance in miles
     pub fn with_miles<T: Into<f64>>(miles: T) -> Self {
-        Self(miles.into() * 1609.34 )
+        Self(miles.into() * 1609.34)
+    }
+
+    /// Retrieve the distance as meters
+    pub fn as_meters(&self) -> f64 {
+        self.0
     }
 
     /// Retrieve the distance as kilometers

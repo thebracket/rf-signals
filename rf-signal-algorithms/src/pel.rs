@@ -8,11 +8,9 @@ use crate::Distance;
 /// Distance (meters) is unbounded.
 /// Frequency is not used in this calculation.
 /// Transmitter height and receiver height are height AMSL.
-pub fn plane_earth_path_loss(
-    tx_height_m: f64,
-    rx_height_m: f64,
-    distance: Distance,
-) -> f64 {
+pub fn plane_earth_path_loss(tx_height: Distance, rx_height: Distance, distance: Distance) -> f64 {
     let d = distance.as_km();
-    (40.0 * d.log10()) + (20.0 * tx_height_m.log10()) + (20.0 * rx_height_m.log10())
+    let txh = tx_height.as_meters();
+    let rxh = rx_height.as_meters();
+    (40.0 * d.log10()) + (20.0 * txh.log10()) + (20.0 * rxh.log10())
 }
