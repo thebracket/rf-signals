@@ -24,6 +24,7 @@ fn main() {
         .header("c/hata.hh")
         .header("c/pel.hh")
         .header("c/soil.hh")
+        .header("c/sui.hh")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
@@ -47,5 +48,6 @@ fn main() {
         .file("c/hata.cc")
         .file("c/pel.cc")
         .file("c/soil.cc")
+        .file("c/sui.cc")
         .compile("libsignals.a");
 }

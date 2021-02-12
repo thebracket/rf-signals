@@ -45,14 +45,25 @@ fn main() {
         "Plane Earth     : {}",
         plane_earth_path_loss(XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS)
     );
-    for t in 0..=15 {
+    for t in 1..=15 {
         println!(
             "Soil Mode {}   : {}",
             t,
             soil_path_loss(FREQ_MHZ, DISTANCE_METERS, t as f32)
         );
     }
-
+    println!(
+        "SUI Mode 1      : {}",
+        sui_path_loss(FREQ_MHZ as f64, XMIT_HEIGHT as f64, RECV_HEIGHT as f64, DISTANCE_METERS as f64, 1)
+    );
+    println!(
+        "SUI Mode 2      : {}",
+        sui_path_loss(FREQ_MHZ as f64, XMIT_HEIGHT as f64, RECV_HEIGHT as f64, DISTANCE_METERS as f64, 2)
+    );
+    println!(
+        "SUI Mode 3      : {}",
+        sui_path_loss(FREQ_MHZ as f64, XMIT_HEIGHT as f64, RECV_HEIGHT as f64, DISTANCE_METERS as f64, 3)
+    );
     println!(
         "Free Space Loss : {}",
         free_space_path_loss_db(FREQ_MHZ as f64, DISTANCE_METERS as f64)

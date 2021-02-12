@@ -18,6 +18,8 @@ mod pel;
 pub use pel::plane_earth_path_loss;
 mod soil;
 pub use soil::soil_path_loss;
+mod sui;
+pub use sui::sui_path_loss;
 
 // Include the C library for use in child modules.
 mod c {
