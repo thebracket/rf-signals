@@ -1,22 +1,37 @@
 use crate::{Distance, Frequency};
 
-/*
-Frequency 30 to 1000MHz
-h1 = 1m and above
-h2 = 1m and above
-Distance 1 to 50km
-http://people.seas.harvard.edu/~jones/es151/prop_models/propagation.html#pel
-*/
+#[derive(Debug, PartialEq)]
+pub enum EgliError {
+    FrequencyOutOfRange,
+    InvalidHeight,
+    DistanceOutOfRange
+}
+
+/// EGLI Path Loss Calculation
+/// Original: https://github.com/Cloud-RF/Signal-Server/blob/master/models/egli.cc
+/// Frequency must be 30 to 10000Mhz
+/// Heights must be > 1m
+/// Distance must be 1..50 km
+/// See http://people.seas.harvard.edu/~jones/es151/prop_models/propagation.html#pel
 pub fn egli_path_loss(
     frequency: Frequency,
     tx_height: Distance,
     rx_height: Distance,
     distance: Distance,
-) -> f64 {
+) -> Result<f64, EgliError> {
     let f = frequency.as_mhz();
+    if f < 30.0 || f > 10_000.0 {
+        return Err(EgliError::FrequencyOutOfRange);
+    }
     let h1 = tx_height.as_meters();
     let h2 = rx_height.as_meters();
+    if h1 < 1.0 || h2 < 1.0 {
+        return Err(EgliError::InvalidHeight);
+    }
     let d = distance.as_km();
+    if d < 1.0 || d > 50.0 {
+        return Err(EgliError::DistanceOutOfRange);
+    }
 
     let mut lp50;
     let c1;
@@ -44,7 +59,7 @@ pub fn egli_path_loss(
 
     lp50 += 4.0 * _10log10f(d) + 2.0 * _10log10f(f) - c1 * _10log10f(h1) - c2 * _10log10f(h2);
 
-    lp50
+    Ok(lp50)
 }
 
 #[inline(always)]

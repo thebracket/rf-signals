@@ -32,7 +32,7 @@ fn main() {
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
-        )
+        ).unwrap()
     );
     println!(
         "HATA Mode 1     : {}",
