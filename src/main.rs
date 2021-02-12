@@ -22,6 +22,10 @@ fn main() {
         cost_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 3)
     );
     println!(
+        "ECC33 Mode 1    : {}",
+        ecc33_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 1)
+    );
+    println!(
         "Free Space Loss : {}",
         free_space_path_loss_db(FREQ_MHZ as f64, DISTANCE_METERS as f64)
     );
