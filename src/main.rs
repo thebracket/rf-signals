@@ -27,7 +27,19 @@ fn main() {
     );
     println!(
         "EGLI            : {}",
-        ecc33_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 1)
+        egli_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS)
+    );
+    println!(
+        "HATA Mode 1     : {}",
+        hata_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 1)
+    );
+    println!(
+        "HATA Mode 2     : {}",
+        hata_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 2)
+    );
+    println!(
+        "HATA Mode 3     : {}",
+        hata_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 3)
     );
     println!(
         "Free Space Loss : {}",
