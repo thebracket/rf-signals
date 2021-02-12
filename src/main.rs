@@ -49,7 +49,7 @@ fn main() {
         println!(
             "Soil Mode {}   : {}",
             t,
-            soil_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(DISTANCE_METERS), t as f64)
+            soil_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(DISTANCE_METERS), t as f64).unwrap()
         );
     }
     println!(
