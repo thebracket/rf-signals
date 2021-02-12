@@ -32,17 +32,17 @@ pub fn sui_path_loss(
     }
 
     let d0 = 100.0;
-    let A = 20.0 * ( ( 4.0 * PI * d0 ) / ( 300.0 / f) ).log10();
+    let big_a = 20.0 * ( ( 4.0 * PI * d0 ) / ( 300.0 / f) ).log10();
     let y = a - (b * txh) + (c / txh);
-    let mut Xf = 0.0;
-    let mut Xh = 0.0;
+    let mut xf = 0.0;
+    let mut xh = 0.0;
 
     if f > 2000.0 {
-        Xf = 6.0 * (f / 2.0).log10();
-        Xh = xhcf * (rxh / 2.0).log10();
+        xf = 6.0 * (f / 2.0).log10();
+        xh = xhcf * (rxh / 2.0).log10();
     }
 
-    A + (10.0 * y) * (d / d0).log10() + Xf + Xh + s
+    big_a + (10.0 * y) * (d / d0).log10() + xf + xh + s
 }
 
 #[cfg(test)]
