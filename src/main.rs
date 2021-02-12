@@ -12,32 +12,32 @@ fn main() {
     println!(
         "Cost Urban      : {}",
         cost_path_loss(
-            Frequency::with_mhz(FREQ_MHZ),
+            Frequency::with_mhz(1700.0),
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
             EstimateMode::Urban
-        )
+        ).unwrap()
     );
     println!(
         "Cost Suburban   : {}",
         cost_path_loss(
-            Frequency::with_mhz(FREQ_MHZ),
+            Frequency::with_mhz(1700.0),
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
             EstimateMode::Suburban
-        )
+        ).unwrap()
     );
     println!(
         "Cost Open       : {}",
         cost_path_loss(
-            Frequency::with_mhz(FREQ_MHZ),
+            Frequency::with_mhz(1700.0),
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
             EstimateMode::Rural
-        )
+        ).unwrap()
     );
     println!(
         "ECC33 Mode 1    : {}",
