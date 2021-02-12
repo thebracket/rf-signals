@@ -14,6 +14,8 @@ mod egli;
 pub use egli::egli_path_loss;
 mod hata;
 pub use hata::hata_path_loss;
+mod pel;
+pub use pel::plane_earth_path_loss;
 
 // Include the C library for use in child modules.
 mod c {

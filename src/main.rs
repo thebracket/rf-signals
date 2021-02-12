@@ -42,6 +42,10 @@ fn main() {
         hata_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 3)
     );
     println!(
+        "Plane Earth     : {}",
+        plane_earth_path_loss(XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS)
+    );
+    println!(
         "Free Space Loss : {}",
         free_space_path_loss_db(FREQ_MHZ as f64, DISTANCE_METERS as f64)
     );
