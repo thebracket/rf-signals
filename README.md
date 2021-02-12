@@ -8,7 +8,7 @@ I've retained the GPL2 license, because the parent requires it. I needed this fo
 
 |Algorithm   |Status   |
 |------------|---------|
-|COST/HATA   |C Only   |
+|COST/HATA   |Ported to Pure Rust|
 |ECC33       |Ported to Pure Rust|
 |EGLI        |Ported to Pure Rust|
 |Fresnel Zone|Pure Rust (not in original)|

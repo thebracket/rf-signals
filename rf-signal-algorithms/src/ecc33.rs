@@ -4,7 +4,7 @@ use crate::{Distance, EstimateMode, Frequency};
 pub enum ECC33Error {
     FrequencyOutOfRange,
     HeightOfOutRange,
-    DistanceOutOfRange
+    DistanceOutOfRange,
 }
 
 /// ECC33 Path Loss Estimation

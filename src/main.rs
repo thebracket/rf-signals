@@ -11,15 +11,33 @@ fn main() {
 
     println!(
         "Cost Urban      : {}",
-        cost_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 1)
+        cost_path_loss(
+            Frequency::with_mhz(FREQ_MHZ),
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS),
+            1
+        )
     );
     println!(
         "Cost Suburban   : {}",
-        cost_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 2)
+        cost_path_loss(
+            Frequency::with_mhz(FREQ_MHZ),
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS),
+            2
+        )
     );
     println!(
         "Cost Open       : {}",
-        cost_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS, 3)
+        cost_path_loss(
+            Frequency::with_mhz(FREQ_MHZ),
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS),
+            3
+        )
     );
     println!(
         "ECC33 Mode 1    : {}",
@@ -29,7 +47,8 @@ fn main() {
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
             EstimateMode::Urban
-        ).unwrap()
+        )
+        .unwrap()
     );
     println!(
         "EGLI            : {}",
