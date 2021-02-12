@@ -1,15 +1,43 @@
 use std::f64::consts::PI;
-use crate::{Distance, Frequency, c::SUIpathLoss};
+use crate::{Distance, Frequency};
 
+/// Defines the calculation more for SUI path loss
+#[derive(Debug, PartialEq)]
+pub enum SuiMode {
+    Urban, Obstructed, Suburban, PartiallyObstructed, Rural, Open
+}
+
+#[derive(Debug, PartialEq)]
+pub enum SuiError {
+    FrequencyOutOfRange
+}
+
+/// Calculates SUI path loss.
+/// Original: https://github.com/Cloud-RF/Signal-Server/blob/master/models/sui.cc
+/// Frequency must be in 1900 to 11,000 Mhz range.
+/// Transmitter height, receiver_height and distance are unbounded.
+/// See http://www.cl.cam.ac.uk/research/dtg/lce-pub/public/vsa23/VTC05_Empirical.pdf
+/// And https://mentor.ieee.org/802.19/file/08/19-08-0010-00-0000-sui-path-loss-model.doc
 pub fn sui_path_loss(
     frequency: Frequency,
     tx_height: Distance,
     rx_height: Distance,
     distance: Distance,
-    mode: i32,
-) -> f64 {
+    mode: SuiMode,
+) -> Result<f64, SuiError> {
+    let mode = match mode {
+        SuiMode::Urban => 1,
+        SuiMode::Obstructed => 1,
+        SuiMode::Suburban => 2,
+        SuiMode::PartiallyObstructed => 2,
+        SuiMode::Rural => 3,
+        SuiMode::Open => 3
+    };
     let d = distance.as_meters();
     let f = frequency.as_mhz();
+    if f < 1900.0|| f > 11000.0 {
+        return Err(SuiError::FrequencyOutOfRange);
+    }
     let txh = tx_height.as_meters();
     let rxh = rx_height.as_meters();
     let mut a = 4.6;
@@ -42,40 +70,5 @@ pub fn sui_path_loss(
         xh = xhcf * (rxh / 2.0).log10();
     }
 
-    big_a + (10.0 * y) * (d / d0).log10() + xf + xh + s
-}
-
-#[cfg(test)]
-mod test {
-    use crate::{Distance, Frequency, c::SUIpathLoss, sui_path_loss};
-    use float_cmp::approx_eq;
-
-    #[test]
-    fn test_c_port() {
-        for f in 1900..10000 {
-            for txh in 1..30 {
-                for rxh in 1..30 {
-                    for d in 1..20 {
-                        for mode in 1..=3 {
-                            let f = Frequency::with_mhz(f);
-                            let tx = Distance::with_meters(txh);
-                            let rx = Distance::with_meters(rxh);
-                            let d = Distance::with_kilometers(d);
-
-                            let c = unsafe { SUIpathLoss(f.as_mhz(), tx.as_meters(), rx.as_meters(), d.as_km(), mode) };
-                            let r = sui_path_loss(f, tx, rx, d, mode);
-
-                            //println!("C={}, R={}", c, r);
-                            assert!(approx_eq!(
-                                f32,
-                                c as f32,
-                                r as f32,
-                                ulps = 2
-                            ));
-                        }
-                    }
-                }
-            }
-        }
-    }
+    Ok(big_a + (10.0 * y) * (d / d0).log10() + xf + xh + s)
 }

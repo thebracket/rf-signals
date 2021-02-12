@@ -43,26 +43,53 @@ fn main() {
     );
     println!(
         "Plane Earth     : {}",
-        plane_earth_path_loss(Distance::with_meters(XMIT_HEIGHT), Distance::with_meters(RECV_HEIGHT), Distance::with_meters(DISTANCE_METERS))
+        plane_earth_path_loss(
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS)
+        )
     );
     for t in 1..=15 {
         println!(
             "Soil Mode {}   : {}",
             t,
-            soil_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(DISTANCE_METERS), t as f64).unwrap()
+            soil_path_loss(
+                Frequency::with_mhz(FREQ_MHZ),
+                Distance::with_meters(DISTANCE_METERS),
+                t as f64
+            )
+            .unwrap()
         );
     }
     println!(
         "SUI Mode 1      : {}",
-        sui_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(XMIT_HEIGHT), Distance::with_meters(RECV_HEIGHT), Distance::with_meters(DISTANCE_METERS), 1)
+        sui_path_loss(
+            Frequency::with_mhz(FREQ_MHZ),
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS),
+            SuiMode::Urban
+        ).unwrap()
     );
     println!(
         "SUI Mode 2      : {}",
-        sui_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(XMIT_HEIGHT), Distance::with_meters(RECV_HEIGHT), Distance::with_meters(DISTANCE_METERS), 2)
+        sui_path_loss(
+            Frequency::with_mhz(FREQ_MHZ),
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS),
+            SuiMode::Suburban
+        ).unwrap()
     );
     println!(
         "SUI Mode 3      : {}",
-        sui_path_loss(Frequency::with_mhz(FREQ_MHZ), Distance::with_meters(XMIT_HEIGHT), Distance::with_meters(RECV_HEIGHT), Distance::with_meters(DISTANCE_METERS), 3)
+        sui_path_loss(
+            Frequency::with_mhz(FREQ_MHZ),
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS),
+            SuiMode::Rural
+        ).unwrap()
     );
     println!(
         "Free Space Loss : {}",
