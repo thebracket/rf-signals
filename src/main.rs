@@ -27,7 +27,12 @@ fn main() {
     );
     println!(
         "EGLI            : {}",
-        egli_path_loss(FREQ_MHZ, XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS)
+        egli_path_loss(
+            Frequency::with_mhz(FREQ_MHZ),
+            Distance::with_meters(XMIT_HEIGHT),
+            Distance::with_meters(RECV_HEIGHT),
+            Distance::with_meters(DISTANCE_METERS),
+        )
     );
     println!(
         "HATA Mode 1     : {}",

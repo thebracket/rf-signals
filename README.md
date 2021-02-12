@@ -10,7 +10,7 @@ I've retained the GPL2 license, because the parent requires it. I needed this fo
 |------------|---------|
 |COST/HATA   |C Only   |
 |ECC33       |C Only   |
-|EGLI        |C Only   |
+|EGLI        |Ported to Pure Rust|
 |Fresnel Zone|Pure Rust (not in original)|
 |FSPL        |Pure Rust|
 |HATA        |Ported to Pure Rust|
