@@ -43,7 +43,7 @@ fn main() {
     );
     println!(
         "Plane Earth     : {}",
-        plane_earth_path_loss(XMIT_HEIGHT, RECV_HEIGHT, DISTANCE_METERS)
+        plane_earth_path_loss(XMIT_HEIGHT as f64, RECV_HEIGHT as f64, DISTANCE_METERS as f64)
     );
     for t in 1..=15 {
         println!(
