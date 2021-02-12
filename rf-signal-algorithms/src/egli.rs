@@ -1,10 +1,4 @@
-use std::f64::NAN;
-
-use crate::{c::EgliPathLoss, Distance, Frequency};
-
-pub fn egli_path_loss_c(freq_mhz: f32, tx_height_m: f32, rx_height_m: f32, distance_m: f32) -> f64 {
-    unsafe { EgliPathLoss(freq_mhz, tx_height_m, rx_height_m, distance_m * 1000.0) }
-}
+use crate::{Distance, Frequency};
 
 /*
 Frequency 30 to 1000MHz
@@ -56,43 +50,4 @@ pub fn egli_path_loss(
 #[inline(always)]
 fn _10log10f(x: f64) -> f64 {
     4.342944 * x.ln()
-}
-
-#[cfg(test)]
-mod test {
-    use crate::{c::EgliPathLoss, egli_path_loss, Distance, Frequency};
-    use float_cmp::approx_eq;
-
-    #[test]
-    fn test_c_port() {
-        for f in 30..10000 {
-            for tx in 1..20 {
-                for rx in 1..20 {
-                    for d in 1..50 {
-                        let f = Frequency::with_mhz(f);
-                        let tx = Distance::with_meters(tx);
-                        let rx = Distance::with_meters(rx);
-                        let d = Distance::with_kilometers(d);
-
-                        let c = unsafe {
-                            EgliPathLoss(
-                                f.as_mhz() as f32,
-                                tx.as_meters() as f32,
-                                rx.as_meters() as f32,
-                                d.as_km() as f32,
-                            )
-                        };
-                        let r = egli_path_loss(f, tx, rx, d);
-                        //println!("C={}, R={}", c, r);
-                        assert!(
-                            approx_eq!(f32, c as f32, r as f32, ulps = 2),
-                            "C={}, R={}",
-                            c,
-                            r
-                        );
-                    }
-                }
-            }
-        }
-    }
 }

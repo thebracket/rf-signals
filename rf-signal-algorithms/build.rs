@@ -20,7 +20,6 @@ fn main() {
         .header("c/itwom3.0.hh")
         .header("c/cost.hh")
         .header("c/ecc33.hh")
-        .header("c/egli.hh")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
@@ -40,6 +39,5 @@ fn main() {
         .file("c/itwom3.0.cc")
         .file("c/cost.cc")
         .file("c/ecc33.cc")
-        .file("c/egli.cc")
         .compile("libsignals.a");
 }
