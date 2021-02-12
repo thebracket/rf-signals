@@ -22,7 +22,6 @@ fn main() {
         .header("c/ecc33.hh")
         .header("c/egli.hh")
         .header("c/hata.hh")
-        .header("c/pel.hh")
         .header("c/soil.hh")
         .header("c/sui.hh")
         // Tell cargo to invalidate the built crate whenever any of the
@@ -46,7 +45,6 @@ fn main() {
         .file("c/ecc33.cc")
         .file("c/egli.cc")
         .file("c/hata.cc")
-        .file("c/pel.cc")
         .file("c/soil.cc")
         .file("c/sui.cc")
         .compile("libsignals.a");
