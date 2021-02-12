@@ -19,7 +19,6 @@ fn main() {
         // bindings for.
         .header("c/itwom3.0.hh")
         .header("c/cost.hh")
-        .header("c/ecc33.hh")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
@@ -38,6 +37,5 @@ fn main() {
     cc::Build::new()
         .file("c/itwom3.0.cc")
         .file("c/cost.cc")
-        .file("c/ecc33.cc")
         .compile("libsignals.a");
 }

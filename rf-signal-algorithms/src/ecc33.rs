@@ -1,23 +1,38 @@
-use crate::{Distance, Frequency};
+use crate::{Distance, EstimateMode, Frequency};
 
-/*
-Frequency 30 to 1000MHz
-h1 = 1m and above
-h2 = 1m and above
-Distance 1 to 50km
-http://people.seas.harvard.edu/~jones/es151/prop_models/propagation.html#pel
-*/
+#[derive(Debug, PartialEq)]
+pub enum ECC33Error {
+    FrequencyOutOfRange,
+    HeightOfOutRange,
+    DistanceOutOfRange
+}
+
+/// ECC33 Path Loss Estimation
+/// Original: https://github.com/Cloud-RF/Signal-Server/blob/master/models/ecc33.cc
+/// Frequency must be 30..1,000 Mhz
+/// Heights must be >1m
+/// Distance must be 1..50km
 pub fn ecc33_path_loss(
     frequency: Frequency,
     tx_height: Distance,
     rx_height: Distance,
     distance: Distance,
-    mode: i32,
-) -> f64 {
+    mode: EstimateMode,
+) -> Result<f64, ECC33Error> {
     let tx_h = tx_height.as_meters();
     let mut rx_h = rx_height.as_meters();
+    if tx_h < 1.0 || rx_h < 1.0 {
+        return Err(ECC33Error::HeightOfOutRange);
+    }
     let d = distance.as_km();
+    if d < 1.0 || d > 50.0 {
+        return Err(ECC33Error::DistanceOutOfRange);
+    }
     let f = frequency.as_ghz();
+    if f < 0.03 || f > 1.0 {
+        return Err(ECC33Error::FrequencyOutOfRange);
+    }
+    let mode = mode.to_mode();
 
     // Sanity check as this model operates within limited Txh/Rxh bounds
     if tx_h - rx_h < 0.0 {
@@ -33,48 +48,5 @@ pub fn ecc33_path_loss(
         gr = (42.57 + 13.7 * f.log10()) * (rx_h.log10() - 0.585);
     }
 
-    return afs + abm - gb - gr;
-}
-
-#[cfg(test)]
-mod test {
-    use crate::{c::ECC33pathLoss, ecc33_path_loss, Distance, Frequency};
-    use float_cmp::approx_eq;
-
-    #[test]
-    fn test_c_port() {
-        for f in 30..1000 {
-            for tx in 1..20 {
-                for rx in 1..20 {
-                    for d in 1..50 {
-                        for mode in 1..3 {
-                            let f = Frequency::with_mhz(f);
-                            let tx = Distance::with_meters(tx);
-                            let rx = Distance::with_meters(rx);
-                            let d = Distance::with_kilometers(d);
-
-                            let c = unsafe {
-                                ECC33pathLoss(
-                                    f.as_mhz() as f32,
-                                    tx.as_meters() as f32,
-                                    rx.as_meters() as f32,
-                                    d.as_km() as f32,
-                                    mode,
-                                )
-                            };
-
-                            let r = ecc33_path_loss(f, tx, rx, d, mode);
-
-                            assert!(
-                                approx_eq!(f32, c as f32, r as f32, ulps = 2),
-                                "C={}, R={}",
-                                c,
-                                r
-                            );
-                        }
-                    }
-                }
-            }
-        }
-    }
+    Ok(afs + abm - gb - gr)
 }

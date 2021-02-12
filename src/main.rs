@@ -24,12 +24,12 @@ fn main() {
     println!(
         "ECC33 Mode 1    : {}",
         ecc33_path_loss(
-            Frequency::with_mhz(FREQ_MHZ),
+            Frequency::with_mhz(500.0),
             Distance::with_meters(XMIT_HEIGHT),
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
-            1
-        )
+            EstimateMode::Urban
+        ).unwrap()
     );
     println!(
         "EGLI            : {}",
