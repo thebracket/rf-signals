@@ -4,7 +4,7 @@ use crate::{Distance, EstimateMode, Frequency};
 pub enum CostError {
     FrequencyOutOfRange,
     HeightOutOfRange,
-    DistanceOutOfRange
+    DistanceOutOfRange,
 }
 
 /// COST231 extension to HATA path loss model.

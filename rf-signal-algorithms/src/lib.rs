@@ -4,8 +4,8 @@ mod itwom3;
 pub use itwom3::{
     GroundConductivity, ItwomPointToPoint, PTPClimate, PTPPath, PTPResult, RadioClimate,
 };
-mod itwom3_port;
 mod fspl;
+mod itwom3_port;
 pub use fspl::free_space_path_loss_db;
 mod fresnel;
 pub use fresnel::fresnel_radius;

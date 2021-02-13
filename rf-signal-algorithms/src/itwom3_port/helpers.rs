@@ -45,23 +45,21 @@ pub(crate) fn sqrt(n: f64) -> f64 {
     n.sqrt()
 }
 
-pub(crate) fn mymax(a: f64, b: f64) -> f64
-{
-	if a > b {
-		return a;
-    }
-	else {
-		return b;
+pub(crate) fn mymax(a: f64, b: f64) -> f64 {
+    if a > b {
+        return a;
+    } else {
+        return b;
     }
 }
 
 pub(crate) fn fortran_dim(x: f64, y: f64) -> f64 {
-	/* This performs the FORTRAN DIM function.  Result is x-y
-	   if x is greater than y; otherwise result is 0.0 */
+    /* This performs the FORTRAN DIM function.  Result is x-y
+    if x is greater than y; otherwise result is 0.0 */
 
-	if x > y {
-		return x - y;
+    if x > y {
+        return x - y;
     } else {
-		return 0.0;
+        return 0.0;
     }
 }

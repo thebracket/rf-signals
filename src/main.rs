@@ -17,7 +17,8 @@ fn main() {
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
             EstimateMode::Urban
-        ).unwrap()
+        )
+        .unwrap()
     );
     println!(
         "Cost Suburban   : {}",
@@ -27,7 +28,8 @@ fn main() {
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
             EstimateMode::Suburban
-        ).unwrap()
+        )
+        .unwrap()
     );
     println!(
         "Cost Open       : {}",
@@ -37,7 +39,8 @@ fn main() {
             Distance::with_meters(RECV_HEIGHT),
             Distance::with_meters(DISTANCE_METERS),
             EstimateMode::Rural
-        ).unwrap()
+        )
+        .unwrap()
     );
     println!(
         "ECC33 Mode 1    : {}",
