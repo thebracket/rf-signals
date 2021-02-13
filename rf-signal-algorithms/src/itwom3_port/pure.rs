@@ -3,7 +3,7 @@
 // needs to retain state.
 
 use super::helpers::*;
-use super::{PropAType, PropType};
+use super::PropType;
 use num_complex::Complex;
 
 pub(crate) fn curve(c1: f64, c2: f64, x1: f64, x2: f64, x3: f64, de: f64) -> f64 {
@@ -68,9 +68,9 @@ pub(crate) fn h0f(r: f64, et: f64) -> f64 {
     h0fv
 }
 
-pub(crate) fn saalos(d: f64, prop: &PropType, propa: &PropAType) -> f64 {
-    let mut ensa;
-    let mut encca;
+pub(crate) fn saalos(d: f64, prop: &PropType) -> f64 {
+    let ensa;
+    let encca;
     let mut q;
     let mut dp;
     let mut dx;
@@ -80,7 +80,7 @@ pub(crate) fn saalos(d: f64, prop: &PropType, propa: &PropAType) -> f64 {
     let mut tip;
     let mut tic = 0.0;
     let mut stic;
-    let mut ctic = 0.0;
+    let ctic;
     let mut sta;
     let mut ttc;
     let mut crpc = 0.0;
@@ -89,29 +89,29 @@ pub(crate) fn saalos(d: f64, prop: &PropType, propa: &PropAType) -> f64 {
     let mut rsp;
     let mut tsp;
     let mut arte;
-    let mut zi;
-    let mut pd;
-    let mut pdk;
+    let zi;
+    let pd;
+    let pdk;
     let mut hone;
-    let mut tvsr;
-    let mut saalosv = 0.0;
+    let tvsr;
+    let saalosv;
     let mut hc;
     let mut cttc = 0.0;
 
     q = 0.0;
 
     if d == 0.0 {
-        tsp = 1.0;
-        rsp = 0.0;
-        d1a = 50.0;
+        //tsp = 1.0;
+        //rsp = 0.0;
+        //d1a = 50.0;
         saalosv = 0.0;
     } else if prop.hg[1] > prop.cch {
         saalosv = 0.0;
     } else {
         pd = d;
         pdk = pd / 1000.0;
-        tsp = 1.0;
-        rsp = 0.0;
+        //tsp = 1.0;
+        //rsp = 0.0;
         d1a = pd;
         /* at first, hone is transmitter antenna height
         relative to receive site ground level. */
@@ -123,7 +123,7 @@ pub(crate) fn saalos(d: f64, prop: &PropType, propa: &PropAType) -> f64 {
             encca = 1.0 + prop.encc * 0.000001;
             dp = pd;
 
-            for j in 0..5 {
+            for _j in 0..5 {
                 tde = dp / 6378137.0;
                 hc = (prop.cch + 6378137.0) * (1.0 - cos(tde));
                 dx = (prop.cch + 6378137.0) * sin(tde);
@@ -229,11 +229,11 @@ pub(crate) fn saalos(d: f64, prop: &PropType, propa: &PropAType) -> f64 {
         }
         saalosv = arte;
     }
-    return saalosv;
+    saalosv
 }
 
 pub(crate) fn qerfi(q: f64) -> f64 {
-    let mut x;
+    let x;
     let mut t;
     let mut v;
     let c0 = 2.515516698;
@@ -252,7 +252,7 @@ pub(crate) fn qerfi(q: f64) -> f64 {
         v = -v;
     }
 
-    return v;
+    v
 }
 
 pub(crate) fn qlrps(
@@ -274,8 +274,8 @@ pub(crate) fn qlrps(
     }
 
     prop.gme = gma * (1.0 - 0.04665 * (prop.ens / 179.3).exp());
-    let mut prop_zgnd = Complex::new(prop.zgndreal, prop.zgndimag);
-    let mut zq = Complex::new(eps, 376.62 * sgm / prop.wn);
+    let mut prop_zgnd;
+    let zq = Complex::new(eps, 376.62 * sgm / prop.wn);
 
     prop_zgnd = (zq - 1.0).sqrt();
 
@@ -287,21 +287,21 @@ pub(crate) fn qlrps(
     prop.zgndimag = prop_zgnd.im;
 }
 
-pub(crate) fn hzns2(pfl: &[f64], prop: &mut PropType, propa: &PropAType) {
+pub(crate) fn hzns2(pfl: &[f64], prop: &mut PropType) {
     let mut wq;
-    let mut np;
-    let mut rp;
+    let np;
+    let rp;
     //let mut i;
     //let mut j;
-    let mut xi;
-    let mut za;
-    let mut zb;
-    let mut qc;
+    let xi;
+    let za;
+    let zb;
+    let qc;
     let mut q;
     let mut sb;
     let mut sa;
-    let mut dr;
-    let mut dshh;
+    let dr;
+    let dshh;
 
     np = pfl[0] as usize; // Is this really a floor?
     xi = pfl[1];
@@ -380,16 +380,16 @@ pub(crate) fn hzns2(pfl: &[f64], prop: &mut PropType, propa: &PropAType) {
 
 pub(crate) fn z1sq2(z: &[f64], x1: f64, x2: f64, z0: &mut f64, zn: &mut f64) {
     /* corrected for use with ITWOM */
-    let mut xn;
+    let xn;
     let mut xa;
     let mut xb;
     let mut x;
     let mut a;
     let mut b;
     let mut bn;
-    let mut n;
+    let n;
     let mut ja;
-    let mut jb;
+    let jb;
 
     xn = z[0];
     xa = (fortran_dim(x1 / z[1], 0.0)).floor();
@@ -411,7 +411,7 @@ pub(crate) fn z1sq2(z: &[f64], x1: f64, x2: f64, z0: &mut f64, zn: &mut f64) {
     b = (z[ja as usize + 2] - z[jb as usize + 2]) * x;
     bn = 2.0 * (x * x);
 
-    for i in 2..n {
+    for _i in 2..n {
         ja += 1;
         x += 1.0;
         bn += x * x;
@@ -425,15 +425,15 @@ pub(crate) fn z1sq2(z: &[f64], x1: f64, x2: f64, z0: &mut f64, zn: &mut f64) {
     *zn = a + (b * (xn - xb));
 }
 
-pub(crate) fn d1thx2(pfl: &[f64], x1: f64, x2: f64, propa: &PropAType) -> f64 {
-    let mut np;
+pub(crate) fn d1thx2(pfl: &[f64], x1: f64, x2: f64) -> f64 {
+    let np;
     let mut ka;
-    let mut kb;
-    let mut n;
+    let kb;
+    let n;
     let mut k;
-    let mut kmx;
+    let kmx;
     let mut d1thx2v;
-    let mut sn;
+    let sn;
     let mut xa;
     let mut xb;
     let mut xc;
@@ -457,7 +457,7 @@ pub(crate) fn d1thx2(pfl: &[f64], x1: f64, x2: f64, propa: &PropAType) -> f64 {
     kb = n - ka + 1;
     sn = n - 1;
     let mut s = Vec::<f64>::with_capacity(n as usize + 2);
-    for i in 0..(n + 2) {
+    for _i in 0..(n + 2) {
         s.push(0.0);
     }
     s[0] = sn as f64;
@@ -498,7 +498,7 @@ pub(crate) fn qtile(nn: i32, a: &mut [f64], ir: i32) -> f64 {
     let mut j;
     let mut j1 = 0;
     let mut i0 = 0;
-    let mut k;
+    let k;
     let mut done = false;
     let mut goto10 = true;
 
@@ -559,7 +559,7 @@ pub(crate) fn qtile(nn: i32, a: &mut [f64], ir: i32) -> f64 {
 }
 
 pub(crate) fn fht(x: f64, pk: f64) -> f64 {
-    let mut w;
+    let w;
     let mut fhtv;
 
     if x < 200.0 {
@@ -585,23 +585,23 @@ pub(crate) fn fht(x: f64, pk: f64) -> f64 {
     return fhtv;
 }
 
-pub(crate) fn alos2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
-    let mut prop_zgnd = Complex::new(prop.zgndreal, prop.zgndimag);
+pub(crate) fn alos2(d: f64, prop: &mut PropType) -> f64 {
+    let prop_zgnd = Complex::new(prop.zgndreal, prop.zgndimag);
     let mut r = Complex::new(0.0, 0.0);
     let mut cd;
     let mut cr;
-    let mut dr;
-    let mut hr;
-    let mut hrg;
-    let mut ht;
-    let mut htg;
-    let mut hrp;
-    let mut re;
-    let mut s;
-    let mut sps;
+    let dr;
+    let hr;
+    let hrg;
+    let ht;
+    let htg;
+    let hrp;
+    let re;
+    let s;
+    let sps;
     let mut q;
-    let mut pd;
-    let mut drh;
+    let pd;
+    let drh;
     /* int rp; */
     let mut alosv;
 
@@ -679,9 +679,9 @@ pub(crate) fn alos2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
 
         if (prop.hg[1] < prop.cch) && (prop.thera < 0.785) && (prop.thenr < 0.785) {
             if sps < 0.05 {
-                alosv = alosv + saalos(pd, prop, propa);
+                alosv = alosv + saalos(pd, prop);
             } else {
-                alosv = saalos(pd, prop, propa);
+                alosv = saalos(pd, prop);
             }
         }
     }
@@ -694,12 +694,12 @@ pub(crate) fn abq_alos(r: Complex<f64>) -> f64 {
 }
 
 pub(crate) fn aknfe(v2: f64) -> f64 {
-    let mut a;
+    let a;
 
     if v2 < 5.76 {
         a = 6.02 + 9.11 * sqrt(v2) - 1.27 * v2;
     } else {
         a = 12.953 + 10.0 * log10(v2);
     }
-    return a;
+    a
 }

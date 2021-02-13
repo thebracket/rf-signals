@@ -146,7 +146,7 @@ fn qlrpfl2(
 
     prop.dist = pfl[0] * pfl[1];
     np = pfl[0] as i32; // Is it doing this for a floor?
-    hzns2(pfl, prop, propa);
+    hzns2(pfl, prop);
     dlb = prop.dl[0] + prop.dl[1];
     prop.rch[0] = prop.hg[0] + pfl[2];
     prop.rch[1] = prop.hg[1] + pfl[np as usize + 2];
@@ -156,7 +156,7 @@ fn qlrpfl2(
     }
 
     xl[1] = prop.dist - xl[1];
-    prop.dh = d1thx2(pfl, xl[0], xl[1], propa);
+    prop.dh = d1thx2(pfl, xl[0], xl[1]);
 
     if (np < 1) || (pfl[1] > 150.0) {
         /* for TRANSHORIZON; diffraction over a mutual horizon, or for one or more obstructions */
@@ -358,7 +358,7 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
             /* if interval width is zero or less, used for area mode */
 
             if !wlos {
-                q = alos2(0.0, prop, propa);
+                q = alos2(0.0, prop);
                 d2 = propa.dlsa;
                 a2 = propa.aed + d2 * propa.emd;
                 d0 = 1.908 * prop.wn * prop.he[0] * prop.he[1];
@@ -374,12 +374,12 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
 
                         d1 = mymax(-propa.aed / propa.emd, 0.25 * propa.dla);
                     }
-                    a1 = alos2(d1, prop, propa);
+                    a1 = alos2(d1, prop);
                     wq = false;
 
                     if d0 < d1 {
-                        a0 = alos2(d0, prop, propa);
-                        a2 = f64::min(a2, alos2(d2, prop, propa));
+                        a0 = alos2(d0, prop);
+                        a2 = f64::min(a2, alos2(d2, prop));
                         q = log(d2 / d0);
                         propa.ak2 = mymax(
                             0.0,
@@ -418,17 +418,17 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
             /* for ITWOM point-to-point mode */
 
             if !wlos {
-                q = alos2(0.0, prop, propa); /* coefficient setup */
+                q = alos2(0.0, prop); /* coefficient setup */
                 wlos = true;
             }
 
             if prop.los == 1 {
                 /* if line of sight */
-                prop.aref = alos2(pd1, prop, propa);
+                prop.aref = alos2(pd1, prop);
             } else {
                 if (prop.dist - prop.dl[0]) as i32 == 0 {
                     /* if at 1st horiz */
-                    prop.aref = 5.8 + alos2(pd1, prop, propa);
+                    prop.aref = 5.8 + alos2(pd1, prop);
                 } else if (prop.dist - prop.dl[0]).floor() > 0.0 {
                     /* if past 1st horiz */
                     q = unsafe { adiff2(0.0, prop, propa) };
@@ -681,7 +681,7 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
                         adiffv2 += aknfe(vv);
                     }
                     /* finally, add clutter loss */
-                    closs = saalos(rd, prop, propa);
+                    closs = saalos(rd, prop);
                     adiffv2 += f64::min(22.0, closs);
                 } else {
                     /* rcvr site too close to 2nd obs */
@@ -712,7 +712,7 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
                             vv = 0.6365 * prop.wn * abs(dro2 + dhh2 - drto);
                         }
                         adiffv2 += aknfe(vv);
-                        closs = saalos(rd, prop, propa);
+                        closs = saalos(rd, prop);
                         adiffv2 += f64::min(closs, 22.0);
                     } else {
                         /* rcvr very close to bare cliff or skyscraper */
@@ -768,7 +768,7 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
                         adiffv2 = aknfe(vv);
                     }
                     /* finally, add clutter loss */
-                    closs = saalos(rd, prop, propa);
+                    closs = saalos(rd, prop);
                     adiffv2 += f64::min(closs, 22.0);
                 } else {
                     /* receive grazing angle too high */
@@ -785,7 +785,7 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
                             vv = 0.6365 * prop.wn * abs(dto + dro - dtr);
                             adiffv2 = aknfe(vv);
                         }
-                        closs = saalos(rd, prop, propa);
+                        closs = saalos(rd, prop);
                         adiffv2 += f64::min(22.0, closs);
                     } else {
                         /* receiver very close to bare cliff or skyscraper */
