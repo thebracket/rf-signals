@@ -3,7 +3,7 @@
 // needs to retain state.
 
 use super::helpers::*;
-use super::{prop_type, propa_type};
+use super::{PropType, PropAType};
 use num_complex::Complex;
 
 pub(crate) fn curve(c1: f64, c2: f64, x1: f64, x2: f64, x3: f64, de: f64) -> f64
@@ -80,7 +80,7 @@ pub(crate) fn h0f(r: f64, et: f64) -> f64
 	return h0fv;
 }
 
-pub(crate) fn saalos(d: f64, prop: &prop_type, propa: &propa_type) -> f64
+pub(crate) fn saalos(d: f64, prop: &PropType, propa: &PropAType) -> f64
 {
     let mut ensa;
     let mut encca;
@@ -319,7 +319,7 @@ pub(crate) fn qerfi(q: f64) -> f64
 	return v;
 }
 
-pub(crate) fn qlrps(fmhz: f64, zsys: f64, en0: f64, ipol: i32, eps: f64, sgm: f64, prop: &mut prop_type)
+pub(crate) fn qlrps(fmhz: f64, zsys: f64, en0: f64, ipol: i32, eps: f64, sgm: f64, prop: &mut PropType)
 {
     let gma = 157e-9;
 
@@ -344,7 +344,7 @@ pub(crate) fn qlrps(fmhz: f64, zsys: f64, en0: f64, ipol: i32, eps: f64, sgm: f6
     prop.zgndimag = prop_zgnd.im;
 }
 
-pub(crate) fn hzns2(pfl: &[f64], prop: &mut prop_type, propa: &propa_type)
+pub(crate) fn hzns2(pfl: &[f64], prop: &mut PropType, propa: &PropAType)
 {
     let mut wq;
     let mut np;
@@ -488,7 +488,7 @@ pub(crate) fn z1sq2(z: &[f64], x1: f64, x2: f64, z0: &mut f64, zn: &mut f64)
     *zn = a + (b * (xn - xb));
 }
 
-pub(crate) fn d1thx2(pfl: &[f64], x1: f64, x2: f64, propa: &propa_type) -> f64
+pub(crate) fn d1thx2(pfl: &[f64], x1: f64, x2: f64, propa: &PropAType) -> f64
 {
     let mut np;
     let mut ka;
@@ -657,7 +657,7 @@ pub(crate) fn fht(x: f64, pk: f64) -> f64
 	return fhtv;
 }
 
-pub(crate) fn alos2(d: f64, prop: &mut prop_type, propa: &propa_type) -> f64
+pub(crate) fn alos2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64
 {
     let mut prop_zgnd = Complex::new(prop.zgndreal, prop.zgndimag);
     let mut r = Complex::new(0.0, 0.0);

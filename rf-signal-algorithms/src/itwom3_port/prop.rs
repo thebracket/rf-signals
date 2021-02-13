@@ -1,5 +1,5 @@
 #[derive(Default)]
-pub(crate) struct prop_type {
+pub(crate) struct PropType {
 	pub(crate) aref: f64,
 	pub(crate) dist: f64,
 	pub(crate) hg : [f64; 2],
@@ -35,7 +35,7 @@ pub(crate) struct prop_type {
 }
 
 #[derive(Default)]
-pub(crate)struct propv_type {
+pub(crate)struct PropVType {
 	pub(crate) sgc : f64,
 	pub(crate) lvar : i32,
 	pub(crate) mdvar : i32,
@@ -43,7 +43,7 @@ pub(crate)struct propv_type {
 }
 
 #[derive(Default)]
-pub(crate)struct propa_type {
+pub(crate)struct PropAType {
 	pub(crate) dlsa : f64,
 	pub(crate) dx : f64,
 	pub(crate) ael : f64,

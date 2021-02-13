@@ -24,9 +24,9 @@ pub fn point_to_point(
     strmode: &mut String,
     errnum: &mut i32
 ) {
-    let mut prop = prop_type::default();
-    let mut propv = propv_type::default();
-    let mut propa = propa_type::default();
+    let mut prop = PropType::default();
+    let mut propv = PropVType::default();
+    let mut propa = PropAType::default();
 
     let mut zsys = 0.0;
     let mut zc;
@@ -118,7 +118,7 @@ if prop.dist <= propa.dlsa || prop.dist <= propa.dx {
 *errnum = prop.kwx;
 }
 
-fn qlrpfl2(pfl: &[f64], klimx: i32, mdvarx: i32, prop: &mut prop_type, propa: &mut propa_type, propv: &mut propv_type)
+fn qlrpfl2(pfl: &[f64], klimx: i32, mdvarx: i32, prop: &mut PropType, propa: &mut PropAType, propv: &mut PropVType)
 {
     let mut np;
     let mut xl = [0.0, 0.0];
@@ -234,7 +234,7 @@ fn qlrpfl2(pfl: &[f64], klimx: i32, mdvarx: i32, prop: &mut prop_type, propa: &m
 }
 
 // TODO: Add thread_local support
-unsafe fn lrprop2(d: f64, prop: &mut prop_type, propa: &mut propa_type)
+unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType)
 {
 	/* ITWOM_lrprop2 */
     static mut wlos : bool = false;
@@ -520,7 +520,7 @@ unsafe fn lrprop2(d: f64, prop: &mut prop_type, propa: &mut propa_type)
 }
 
 //TODO: thread local madness
-unsafe fn adiff2(d: f64, prop: &mut prop_type, propa: &propa_type) -> f64
+unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64
 {
     let prop_zgnd = Complex::new(prop.zgndreal, prop.zgndimag);
 
@@ -859,7 +859,7 @@ unsafe fn adiff2(d: f64, prop: &mut prop_type, propa: &propa_type) -> f64
 	return adiffv2;
 }
 
-unsafe fn ascat(d: f64, prop: &prop_type, propa: &propa_type) -> f64
+unsafe fn ascat(d: f64, prop: &PropType, propa: &PropAType) -> f64
 {
     static mut ad : f64 = 0.0; 
     static mut rr : f64 = 0.0; 
@@ -944,7 +944,7 @@ unsafe fn ascat(d: f64, prop: &prop_type, propa: &propa_type) -> f64
 	return ascatv;
 }
 
-unsafe fn avar(zzt: f64, zzl: f64, zzc: f64, prop: &mut prop_type, propv: &mut propv_type) -> f64
+unsafe fn avar(zzt: f64, zzl: f64, zzc: f64, prop: &mut PropType, propv: &mut PropVType) -> f64
 {
     static mut kdv : i32 = 0;
     static mut dexa : f64 = 0.0; 

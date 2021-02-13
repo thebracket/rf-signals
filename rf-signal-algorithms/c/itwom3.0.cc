@@ -56,7 +56,7 @@ struct tcomplex {
 	double tcimag;
 };
 
-struct prop_type {
+struct PropType {
 	double aref;
 	double dist;
 	double hg[2];
@@ -91,14 +91,14 @@ struct prop_type {
 	int los;
 };
 
-struct propv_type {
+struct PropVType {
 	double sgc;
 	int lvar;
 	int mdvar;
 	int klim;
 };
 
-struct propa_type {
+struct PropAType {
 	double dlsa;
 	double dx;
 	double ael;
@@ -256,7 +256,7 @@ double abq_alos(complex < double >r)
 	return r.real() * r.real() + r.imag() * r.imag();
 }
 
-double saalos(double d, prop_type & prop, propa_type & propa)
+double saalos(double d, PropType & prop, PropAType & propa)
 {
 	double ensa, encca, q, dp, dx, tde, hc, ucrpc, ctip, tip, tic, stic,
 	    ctic, sta;
@@ -448,7 +448,7 @@ double saalos(double d, prop_type & prop, propa_type & propa)
 	return saalosv;
 }
 
-double adiff(double d, prop_type & prop, propa_type & propa)
+double adiff(double d, PropType & prop, PropAType & propa)
 {
 	complex < double >prop_zgnd(prop.zgndreal, prop.zgndimag);
 	static thread_local double wd1, xd1, afo, qk, aht, xht;
@@ -510,7 +510,7 @@ double adiff(double d, prop_type & prop, propa_type & propa)
 	return adiffv;
 }
 
-double adiff2(double d, prop_type & prop, propa_type & propa)
+double adiff2(double d, PropType & prop, PropAType & propa)
 {
 	complex < double >prop_zgnd(prop.zgndreal, prop.zgndimag);
 	static thread_local double wd1, xd1, qk, aht, xht, toh, toho, roh, roho, dto, dto1,
@@ -827,7 +827,7 @@ double adiff2(double d, prop_type & prop, propa_type & propa)
 	return adiffv2;
 }
 
-double ascat(double d, prop_type & prop, propa_type & propa)
+double ascat(double d, PropType & prop, PropAType & propa)
 {
 	static thread_local double ad, rr, etq, h0s;
 	double h0, r1, r2, z0, ss, et, ett, th, q;
@@ -928,7 +928,7 @@ double qerfi(double q)
 }
 
 void qlrps(double fmhz, double zsys, double en0, int ipol, double eps,
-	   double sgm, prop_type & prop)
+	   double sgm, PropType & prop)
 {
 	double gma = 157e-9;
 
@@ -951,7 +951,7 @@ void qlrps(double fmhz, double zsys, double en0, int ipol, double eps,
 
 }
 
-double alos(double d, prop_type & prop, propa_type & propa)
+double alos(double d, PropType & prop, PropAType & propa)
 {
 	complex < double >prop_zgnd(prop.zgndreal, prop.zgndimag);
 	static thread_local double wls;
@@ -995,7 +995,7 @@ double alos(double d, prop_type & prop, propa_type & propa)
 	return alosv;
 }
 
-double alos2(double d, prop_type & prop, propa_type & propa)
+double alos2(double d, PropType & prop, PropAType & propa)
 {
 	complex < double >prop_zgnd(prop.zgndreal, prop.zgndimag);
 	complex < double >r;
@@ -1096,8 +1096,8 @@ double alos2(double d, prop_type & prop, propa_type & propa)
 	return alosv;
 }
 
-void qlra(int kst[], int klimx, int mdvarx, prop_type & prop,
-	  propv_type & propv)
+void qlra(int kst[], int klimx, int mdvarx, PropType & prop,
+	  PropVType & propv)
 {
 	double q;
 
@@ -1143,7 +1143,7 @@ void qlra(int kst[], int klimx, int mdvarx, prop_type & prop,
 	}
 }
 
-void lrprop(double d, prop_type & prop, propa_type & propa)
+void lrprop(double d, PropType & prop, PropAType & propa)
 {
 	/* PaulM_lrprop used for ITM */
 	static thread_local bool wlos, wscat;
@@ -1334,7 +1334,7 @@ void lrprop(double d, prop_type & prop, propa_type & propa)
 	prop.aref = mymax(prop.aref, 0.0);
 }
 
-void lrprop2(double d, prop_type & prop, propa_type & propa)
+void lrprop2(double d, PropType & prop, PropAType & propa)
 {
 	/* ITWOM_lrprop2 */
 	static thread_local bool wlos, wscat;
@@ -1609,8 +1609,8 @@ double curve(double const &c1, double const &c2, double const &x1,
 	return (c1 + c2 / (1.0 + temp1)) * temp2 / (1.0 + temp2);
 }
 
-double avar(double zzt, double zzl, double zzc, prop_type & prop,
-	    propv_type & propv)
+double avar(double zzt, double zzl, double zzc, PropType & prop,
+	    PropVType & propv)
 {
 	static thread_local int kdv;
 	static thread_local double dexa, de, vmd, vs0, sgl, sgtm, sgtp, sgtd, tgtd,
@@ -1819,7 +1819,7 @@ double avar(double zzt, double zzl, double zzc, prop_type & prop,
 	return avarv;
 }
 
-void hzns(double pfl[], prop_type & prop)
+void hzns(double pfl[], PropType & prop)
 {
 	/* Used only with ITM 1.2.2 */
 	bool wq;
@@ -1867,7 +1867,7 @@ void hzns(double pfl[], prop_type & prop)
 	}
 }
 
-void hzns2(double pfl[], prop_type & prop, propa_type & propa)
+void hzns2(double pfl[], PropType & prop, PropAType & propa)
 {
 	bool wq;
 	int np, rp, i, j;
@@ -2173,7 +2173,7 @@ double d1thx(double pfl[], const double &x1, const double &x2)
 }
 
 double d1thx2(double pfl[], const double &x1, const double &x2,
-	      propa_type & propa)
+	      PropAType & propa)
 {
 	int np, ka, kb, n, k, kmx, j;
 	double d1thx2v, sn, xa, xb, xc;
@@ -2224,8 +2224,8 @@ double d1thx2(double pfl[], const double &x1, const double &x2,
 	return d1thx2v;
 }
 
-void qlrpfl(double pfl[], int klimx, int mdvarx, prop_type & prop,
-	    propa_type & propa, propv_type & propv)
+void qlrpfl(double pfl[], int klimx, int mdvarx, PropType & prop,
+	    PropAType & propa, PropVType & propv)
 {
 	int np, j;
 	double xl[2], q, za, zb, temp;
@@ -2302,8 +2302,8 @@ void qlrpfl(double pfl[], int klimx, int mdvarx, prop_type & prop,
 	lrprop(0.0, prop, propa);
 }
 
-void qlrpfl2(double pfl[], int klimx, int mdvarx, prop_type & prop,
-	     propa_type & propa, propv_type & propv)
+void qlrpfl2(double pfl[], int klimx, int mdvarx, PropType & prop,
+	     PropAType & propa, PropVType & propv)
 {
 	int np, j;
 	double xl[2], dlb, q, za, zb, temp, rad, rae1, rae2;
@@ -2453,9 +2453,9 @@ Note that point_to_point has become point_to_point_ITM for use as the old ITM
 
 *****************************************************************************/
 {
-	prop_type prop;
-	propv_type propv;
-	propa_type propa;
+	PropType prop;
+	PropVType propv;
+	PropAType propa;
 	double zsys = 0;
 	double zc, zr;
 	double eno, enso, q;
@@ -2574,9 +2574,9 @@ void point_to_point(double* elev, double tht_m, double rht_m, double eps_dielect
 
 *****************************************************************************/
 {
-	prop_type prop;
-	propv_type propv;
-	propa_type propa;
+	PropType prop;
+	PropVType propv;
+	PropAType propa;
 
 	double zsys = 0;
 	double zc, zr;
@@ -2692,9 +2692,9 @@ void point_to_pointMDH_two(double *elev, double tht_m, double rht_m, double eps_
 *************************************************************************************************/
 {
 
-	prop_type prop;
-	propv_type propv;
-	propa_type propa;
+	PropType prop;
+	PropVType propv;
+	PropAType propa;
 	double zsys = 0;
 	double ztime, zloc, zconf;
 	double eno, enso, q;
@@ -2790,9 +2790,9 @@ void point_to_pointDH(double *elev, double tht_m, double rht_m, double eps_diele
 {
 
 	char strmode[100];
-	prop_type prop;
-	propv_type propv;
-	propa_type propa;
+	PropType prop;
+	PropVType propv;
+	PropAType propa;
 	double zsys = 0;
 	double zc, zr;
 	double eno, enso, q;
@@ -2892,9 +2892,9 @@ void area(long ModVar, double deltaH, double tht_m, double rht_m,
 	//                          Results are probably invalid.
 	// NOTE: strmode is not used at this time.
 
-	prop_type prop;
-	propv_type propv;
-	propa_type propa;
+	PropType prop;
+	PropVType propv;
+	PropAType propa;
 	double zt, zl, zc, xlb;
 	double fs;
 	long ivar;
