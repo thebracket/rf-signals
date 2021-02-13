@@ -29,17 +29,17 @@ pub fn point_to_point(
     let mut propa = PropAType::default();
 
     let mut zsys = 0.0;
-    let mut zc;
-    let mut zr;
-    let mut eno;
-    let mut enso;
+    let zc;
+    let zr;
+    let eno;
+    let enso;
     let mut q;
-    let mut ja;
-    let mut jb;
-    let mut np;
+    let ja;
+    let jb;
+    let np;
     /* double dkm, xkm; */
-    let mut tpd;
-    let mut fs;
+    let tpd;
+    let fs;
 
     prop.hg[0] = tht_m;
     prop.hg[1] = rht_m;
@@ -133,14 +133,14 @@ fn qlrpfl2(
     propa: &mut PropAType,
     propv: &mut PropVType,
 ) {
-    let mut np;
+    let np;
     let mut xl = [0.0, 0.0];
-    let mut dlb;
+    let dlb;
     let mut q = 0.0;
     let mut za = 0.0;
     let mut zb = 0.0;
-    let mut temp;
-    let mut rad;
+    let temp;
+    let rad;
     let mut rae1 = 0.0;
     let mut rae2 = 0.0;
 
@@ -247,23 +247,23 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
     static mut xae: f64 = 0.0;
     //static thread_local bool wlos, wscat;
     //static thread_local double dmin, xae;
-    let mut prop_zgnd = Complex::new(prop.zgndreal, prop.zgndimag);
-    let mut pd1;
-    let mut a0;
-    let mut a1;
+    let prop_zgnd = Complex::new(prop.zgndreal, prop.zgndimag);
+    let pd1;
+    let a0;
+    let a1;
     let mut a2;
-    let mut a3;
-    let mut a4;
-    let mut a5;
-    let mut a6;
-    let mut iw;
+    let a3;
+    let a4;
+    let a5;
+    let a6;
+    let  iw;
     let mut d0;
-    let mut d1;
-    let mut d2;
-    let mut d3;
-    let mut d4;
-    let mut d5;
-    let mut d6;
+    let  d1;
+    let  d2;
+    let  d3;
+    let  d4;
+    let  d5;
+    let  d6;
     let mut wq;
     let mut q;
 
@@ -322,12 +322,12 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
         }
 
         dmin = (prop.he[0] - prop.he[1]).abs() / 200e-3;
-        q = unsafe { adiff2(0.0, prop, propa) };
+        q = adiff2(0.0, prop, propa);
         xae = pow(prop.wn * (prop.gme * prop.gme), -THIRD);
         d3 = mymax(propa.dlsa, 1.3787 * xae + propa.dla);
         d4 = d3 + 2.7574 * xae;
-        a3 = unsafe { adiff2(d3, prop, propa) };
-        a4 = unsafe { adiff2(d4, prop, propa) };
+        a3 = adiff2(d3, prop, propa);
+        a4 = adiff2(d4, prop, propa);
         propa.emd = (a4 - a3) / (d4 - d3);
         propa.aed = a3 - propa.emd * d3;
     }
@@ -431,8 +431,8 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
                     prop.aref = 5.8 + alos2(pd1, prop);
                 } else if (prop.dist - prop.dl[0]).floor() > 0.0 {
                     /* if past 1st horiz */
-                    q = unsafe { adiff2(0.0, prop, propa) };
-                    prop.aref = unsafe { adiff2(pd1, prop, propa) };
+                    q = adiff2(0.0, prop, propa);
+                    prop.aref = adiff2(pd1, prop, propa);
                 } else {
                     prop.aref = 1.0;
                 }
@@ -483,8 +483,8 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
                 d6 = 0.0;
                 q = ascat(0.0, prop, propa);
                 a6 = ascat(pd1, prop, propa);
-                q = unsafe { adiff2(0.0, prop, propa) };
-                a5 = unsafe { adiff2(pd1, prop, propa) };
+                q = adiff2(0.0, prop, propa);
+                a5 = adiff2(pd1, prop, propa);
 
                 if a5 <= a6 {
                     propa.dx = 10000000.0;
@@ -534,22 +534,22 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
     let mut q;
     let mut pk;
     let mut rd;
-    let mut ds;
-    let mut dsl;
-    let mut th;
+    let ds;
+    let dsl;
+    let th;
     let mut wa;
-    let mut sf2;
+    let sf2;
     let mut vv;
-    let mut kedr = 0.0;
-    let mut arp = 0.0;
-    let mut sdr = 0.0;
-    let mut pd = 0.0;
-    let mut srp = 0.0;
-    let mut kem = 0.0;
-    let mut csd = 0.0;
-    let mut sdl = 0.0;
+    let kedr;
+    let arp;
+    let sdr;
+    let mut pd;
+    let srp;
+    let mut kem;
+    let csd;
+    let mut sdl;
     let mut adiffv2 = 0.0;
-    let mut closs = 0.0;
+    let closs;
 
     /* sf1=1.0; *//* average empirical hilltop foliage scatter factor for 1 obstruction  */
     sf2 = 1.0; /* average empirical hilltop foliage scatter factor for 2 obstructions */
@@ -800,7 +800,7 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
             }
         }
     }
-    return adiffv2;
+    adiffv2
 }
 
 unsafe fn ascat(d: f64, prop: &PropType, propa: &PropAType) -> f64 {
@@ -810,15 +810,15 @@ unsafe fn ascat(d: f64, prop: &PropType, propa: &PropAType) -> f64 {
     static mut h0s: f64 = 0.0;
     //static thread_local double ad, rr, etq, h0s;
     let mut h0;
-    let mut r1;
+    let r1;
     let mut r2;
-    let mut z0;
+    let z0;
     let mut ss;
-    let mut et;
-    let mut ett;
+    let et;
+    let ett;
     let mut th;
     let mut q;
-    let mut ascatv;
+    let ascatv;
     let mut temp;
 
     if d == 0.0 {
@@ -1220,7 +1220,7 @@ mod test {
     fn basic_one_obstruction() {
         let mut elevations = vec![1.0; 200];
         elevations[100] = 110.0;
-        let mut terrain_path = PTPPath::new(elevations, 100.0, 100.0, 10.0).unwrap();
+        let terrain_path = PTPPath::new(elevations, 100.0, 100.0, 10.0).unwrap();
         let climate = PTPClimate::default();
 
         let mut dbloss = 0.0;
@@ -1255,7 +1255,7 @@ mod test {
         let mut elevations = vec![1.0; 200];
         elevations[100] = 110.0;
         elevations[150] = 110.0;
-        let mut terrain_path = PTPPath::new(elevations, 100.0, 100.0, 10.0).unwrap();
+        let terrain_path = PTPPath::new(elevations, 100.0, 100.0, 10.0).unwrap();
         let climate = PTPClimate::default();
 
         let mut dbloss = 0.0;
