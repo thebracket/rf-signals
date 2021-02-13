@@ -4,6 +4,7 @@ mod itwom3;
 pub use itwom3::{
     GroundConductivity, ItwomPointToPoint, PTPClimate, PTPPath, PTPResult, RadioClimate,
 };
+mod itwom3_port;
 mod fspl;
 pub use fspl::free_space_path_loss_db;
 mod fresnel;
@@ -22,6 +23,10 @@ mod soil;
 pub use soil::soil_path_loss;
 mod sui;
 pub use sui::sui_path_loss;
+
+pub mod ported {
+    pub use super::itwom3_port::point_to_point;
+}
 
 /// Defines the calculation more for SUI, HATA, etc. path loss
 #[derive(Debug, PartialEq)]

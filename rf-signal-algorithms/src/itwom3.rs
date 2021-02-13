@@ -123,9 +123,9 @@ pub enum PTPError {
 /// The height of transmitters and receivers is height above the elevations specified.
 #[derive(Debug)]
 pub struct PTPPath {
-    elevations: Vec<f64>,
-    transmit_height: f64,
-    receive_height: f64,
+    pub elevations: Vec<f64>,
+    pub transmit_height: f64,
+    pub receive_height: f64,
 }
 
 impl PTPPath {
@@ -169,10 +169,10 @@ impl PTPPath {
 
 #[derive(Debug)]
 pub struct PTPClimate {
-    eps_dialect: f64,
-    sgm_conductivity: f64,
-    eno_ns_surfref: f64,
-    radio_climate: i32,
+    pub eps_dialect: f64,
+    pub sgm_conductivity: f64,
+    pub eno_ns_surfref: f64,
+    pub radio_climate: i32,
 }
 
 pub enum GroundConductivity {
