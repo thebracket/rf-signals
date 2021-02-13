@@ -20,9 +20,6 @@ pub(crate) fn curve(c1: f64, c2: f64, x1: f64, x2: f64, x3: f64, de: f64) -> f64
 pub(crate) fn ahd(td: f64) -> f64
 {
     let i;
-	//double a[3] = { 133.4, 104.6, 71.8 };
-	//double b[3] = { 0.332e-3, 0.212e-3, 0.157e-3 };
-	//double c[3] = { -4.343, -1.086, 2.171 };
     let a = [133.4, 104.6, 71.8];
     let b = [0.332e-3, 0.212e-3, 0.157e-3];
     let c = [-4.343, -1.086, 2.171];
@@ -37,16 +34,18 @@ pub(crate) fn ahd(td: f64) -> f64
 		i = 2;
     }
 
-	return a[i] + b[i] * td + c[i] * td.ln();
+	a[i] + b[i] * td + c[i] * td.ln()
 }
 
 pub(crate) fn h0f(r: f64, et: f64) -> f64
 {
     let a = [25.0, 80.0, 177.0, 395.0, 705.0];
     let b = [24.0, 45.0, 68.0, 80.0, 105.0];
-	//double a[5] = { 25.0, 80.0, 177.0, 395.0, 705.0 };
-	//double b[5] = { 24.0, 45.0, 68.0, 80.0, 105.0 };
-    let q; let x; let mut h0fv; let temp; let mut it;
+    let q; 
+	let x; 
+	let mut h0fv; 
+	let temp; 
+	let mut it;
 
 	it = et as i32;
 
@@ -77,7 +76,7 @@ pub(crate) fn h0f(r: f64, et: f64) -> f64
 						       1.0);
     }
 
-	return h0fv;
+	h0fv
 }
 
 pub(crate) fn saalos(d: f64, prop: &PropType, propa: &PropAType) -> f64
