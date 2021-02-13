@@ -455,12 +455,12 @@ pub(crate) fn z1sq2(z: &[f64], x1: f64, x2: f64, z0: &mut f64, zn: &mut f64)
     let mut jb;
 
     xn = z[0];
-    xa = (FORTRAN_DIM(x1 / z[1], 0.0)).floor();
-    xb = xn - (FORTRAN_DIM(xn, x2 / z[1])).floor();
+    xa = (fortran_dim(x1 / z[1], 0.0)).floor();
+    xb = xn - (fortran_dim(xn, x2 / z[1])).floor();
 
     if xb <= xa {
-        xa = FORTRAN_DIM(xa, 1.0);
-        xb = xn - FORTRAN_DIM(xn, xb + 1.0);
+        xa = fortran_dim(xa, 1.0);
+        xb = xn - fortran_dim(xn, xb + 1.0);
     }
 
     ja = xa as i32;

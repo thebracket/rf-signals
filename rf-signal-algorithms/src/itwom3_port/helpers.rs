@@ -55,7 +55,7 @@ pub(crate) fn mymax(a: f64, b: f64) -> f64
     }
 }
 
-pub(crate) fn FORTRAN_DIM(x: f64, y: f64) -> f64 {
+pub(crate) fn fortran_dim(x: f64, y: f64) -> f64 {
 	/* This performs the FORTRAN DIM function.  Result is x-y
 	   if x is greater than y; otherwise result is 0.0 */
 

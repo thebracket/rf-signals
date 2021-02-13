@@ -145,7 +145,7 @@ double mymax(const double &a, const double &b)
 		return b;
 }
 
-double FORTRAN_DIM(const double &x, const double &y)
+double fortran_dim(const double &x, const double &y)
 {
 	/* This performs the FORTRAN DIM function.  Result is x-y
 	   if x is greater than y; otherwise result is 0.0 */
@@ -875,7 +875,7 @@ double ascat(double d, prop_type & prop, propa_type & propa)
 			h0 +=
 			    mymin(h0,
 				  (1.38 - log(ett)) * log(ss) * log(q) * 0.49);
-			h0 = FORTRAN_DIM(h0, 0.0);
+			h0 = fortran_dim(h0, 0.0);
 
 			if (et < 1.0) {
 				/* h0=et*h0+(1.0-et)*4.343*log(pow((1.0+1.4142/r1)*(1.0+1.4142/r2),2.0)*(r1+r2)/(r1+r2+2.8284)); */
@@ -1258,7 +1258,7 @@ void lrprop(double d, prop_type & prop, propa_type & propa)
 					if (propa.ak1 < 0.0) {
 						propa.ak1 = 0.0;
 						propa.ak2 =
-						    FORTRAN_DIM(a2, a0) / q;
+						    fortran_dim(a2, a0) / q;
 
 						if (propa.ak2 == 0.0)
 							propa.ak1 = propa.emd;
@@ -1474,7 +1474,7 @@ void lrprop2(double d, prop_type & prop, propa_type & propa)
 							if (propa.ak1 < 0.0) {
 								propa.ak1 = 0.0;
 								propa.ak2 =
-								    FORTRAN_DIM
+								    fortran_dim
 								    (a2,
 								     a0) / q;
 
@@ -1491,7 +1491,7 @@ void lrprop2(double d, prop_type & prop, propa_type & propa)
 
 					if (!wq) {
 						propa.ak1 =
-						    FORTRAN_DIM(a2,
+						    fortran_dim(a2,
 								a1) / (d2 - d1);
 						propa.ak2 = 0.0;
 
@@ -1960,12 +1960,12 @@ void z1sq1(double z[], const double &x1, const double &x2, double &z0,
 	int n, ja, jb;
 
 	xn = z[0];
-	xa = int (FORTRAN_DIM(x1 / z[1], 0.0));
-	xb = xn - int (FORTRAN_DIM(xn, x2 / z[1]));
+	xa = int (fortran_dim(x1 / z[1], 0.0));
+	xb = xn - int (fortran_dim(xn, x2 / z[1]));
 
 	if (xb <= xa) {
-		xa = FORTRAN_DIM(xa, 1.0);
-		xb = xn - FORTRAN_DIM(xn, xb + 1.0);
+		xa = fortran_dim(xa, 1.0);
+		xb = xn - fortran_dim(xn, xb + 1.0);
 	}
 
 	ja = (int)xa;
@@ -1999,12 +1999,12 @@ void z1sq2(double z[], const double &x1, const double &x2, double &z0,
 	int n, ja, jb;
 
 	xn = z[0];
-	xa = int (FORTRAN_DIM(x1 / z[1], 0.0));
-	xb = xn - int (FORTRAN_DIM(xn, x2 / z[1]));
+	xa = int (fortran_dim(x1 / z[1], 0.0));
+	xb = xn - int (fortran_dim(xn, x2 / z[1]));
 
 	if (xb <= xa) {
-		xa = FORTRAN_DIM(xa, 1.0);
-		xb = xn - FORTRAN_DIM(xn, xb + 1.0);
+		xa = fortran_dim(xa, 1.0);
+		xb = xn - fortran_dim(xn, xb + 1.0);
 	}
 
 	ja = (int)xa;
@@ -2242,8 +2242,8 @@ void qlrpfl(double pfl[], int klimx, int mdvarx, prop_type & prop,
 
 	if (prop.dl[0] + prop.dl[1] > 1.5 * prop.dist) {
 		z1sq1(pfl, xl[0], xl[1], za, zb);
-		prop.he[0] = prop.hg[0] + FORTRAN_DIM(pfl[2], za);
-		prop.he[1] = prop.hg[1] + FORTRAN_DIM(pfl[np + 2], zb);
+		prop.he[0] = prop.hg[0] + fortran_dim(pfl[2], za);
+		prop.he[1] = prop.hg[1] + fortran_dim(pfl[np + 2], zb);
 
 		for (j = 0; j < 2; j++)
 			prop.dl[j] =
@@ -2282,8 +2282,8 @@ void qlrpfl(double pfl[], int klimx, int mdvarx, prop_type & prop,
 	else {
 		z1sq1(pfl, xl[0], 0.9 * prop.dl[0], za, q);
 		z1sq1(pfl, prop.dist - 0.9 * prop.dl[1], xl[1], q, zb);
-		prop.he[0] = prop.hg[0] + FORTRAN_DIM(pfl[2], za);
-		prop.he[1] = prop.hg[1] + FORTRAN_DIM(pfl[np + 2], zb);
+		prop.he[0] = prop.hg[0] + fortran_dim(pfl[2], za);
+		prop.he[1] = prop.hg[1] + fortran_dim(pfl[np + 2], zb);
 	}
 
 	prop.mdp = -1;
@@ -2326,15 +2326,15 @@ void qlrpfl2(double pfl[], int klimx, int mdvarx, prop_type & prop,
 		if (dlb < 1.5 * prop.dist) {
 			z1sq2(pfl, xl[0], 0.9 * prop.dl[0], za, q);
 			z1sq2(pfl, prop.dist - 0.9 * prop.dl[1], xl[1], q, zb);
-			prop.he[0] = prop.hg[0] + FORTRAN_DIM(pfl[2], za);
-			prop.he[1] = prop.hg[1] + FORTRAN_DIM(pfl[np + 2], zb);
+			prop.he[0] = prop.hg[0] + fortran_dim(pfl[2], za);
+			prop.he[1] = prop.hg[1] + fortran_dim(pfl[np + 2], zb);
 		}
 
 		/* for a Line-of-Sight path */
 		else {
 			z1sq2(pfl, xl[0], xl[1], za, zb);
-			prop.he[0] = prop.hg[0] + FORTRAN_DIM(pfl[2], za);
-			prop.he[1] = prop.hg[1] + FORTRAN_DIM(pfl[np + 2], zb);
+			prop.he[0] = prop.hg[0] + fortran_dim(pfl[2], za);
+			prop.he[1] = prop.hg[1] + fortran_dim(pfl[np + 2], zb);
 
 			for (j = 0; j < 2; j++)
 				prop.dl[j] =

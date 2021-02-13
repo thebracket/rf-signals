@@ -150,15 +150,15 @@ fn qlrpfl2(pfl: &[f64], klimx: i32, mdvarx: i32, prop: &mut prop_type, propa: &m
     if dlb < 1.5 * prop.dist {
         z1sq2(pfl, xl[0], 0.9 * prop.dl[0], &mut za, &mut q);
         z1sq2(pfl, prop.dist - 0.9 * prop.dl[1], xl[1], &mut q, &mut zb);
-        prop.he[0] = prop.hg[0] + FORTRAN_DIM(pfl[2], za);
-        prop.he[1] = prop.hg[1] + FORTRAN_DIM(pfl[np as usize + 2], zb);
+        prop.he[0] = prop.hg[0] + fortran_dim(pfl[2], za);
+        prop.he[1] = prop.hg[1] + fortran_dim(pfl[np as usize + 2], zb);
     }
 
     /* for a Line-of-Sight path */
     else {
         z1sq2(pfl, xl[0], xl[1], &mut za, &mut zb);
-        prop.he[0] = prop.hg[0] + FORTRAN_DIM(pfl[2], za);
-        prop.he[1] = prop.hg[1] + FORTRAN_DIM(pfl[np as usize + 2], zb);
+        prop.he[0] = prop.hg[0] + fortran_dim(pfl[2], za);
+        prop.he[1] = prop.hg[1] + fortran_dim(pfl[np as usize + 2], zb);
 
         for j in 0..2 {
             prop.dl[j] =
@@ -397,7 +397,7 @@ unsafe fn lrprop2(d: f64, prop: &mut prop_type, propa: &mut propa_type)
 							if propa.ak1 < 0.0 {
 								propa.ak1 = 0.0;
 								propa.ak2 =
-								    FORTRAN_DIM
+								    fortran_dim
 								    (a2,
 								     a0) / q;
 
@@ -415,7 +415,7 @@ unsafe fn lrprop2(d: f64, prop: &mut prop_type, propa: &mut propa_type)
 
 					if !wq {
 						propa.ak1 =
-						    FORTRAN_DIM(a2,
+						    fortran_dim(a2,
 								a1) / (d2 - d1);
 						propa.ak2 = 0.0;
 
@@ -912,7 +912,7 @@ unsafe fn ascat(d: f64, prop: &prop_type, propa: &propa_type) -> f64
 			h0 +=
             f64::min(h0,
 				  (1.38 - log(ett)) * log(ss) * log(q) * 0.49);
-			h0 = FORTRAN_DIM(h0, 0.0);
+			h0 = fortran_dim(h0, 0.0);
 
 			if et < 1.0 {
 				/* h0=et*h0+(1.0-et)*4.343*log(pow((1.0+1.4142/r1)*(1.0+1.4142/r2),2.0)*(r1+r2)/(r1+r2+2.8284)); */
