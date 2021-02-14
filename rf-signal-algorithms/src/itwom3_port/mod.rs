@@ -1010,6 +1010,40 @@ unsafe fn avar(zzt: f64, zzl: f64, zzc: f64, prop: &mut PropType, propv: &mut Pr
 
     if propv.lvar > 0 {
         // TODO: Check this - it had no breaks?
+
+        // This was the default switch case with no break - so it always ran
+        {
+            if propv.klim <= 0 || propv.klim > 7 {
+                propv.klim = 5;
+                temp_klim = 4;
+                prop.kwx = i32::max(prop.kwx, 2);
+            }
+
+            cv1 = bv1[temp_klim as usize];
+            cv2 = bv2[temp_klim as usize];
+            yv1 = xv1[temp_klim as usize];
+            yv2 = xv2[temp_klim as usize];
+            yv3 = xv3[temp_klim as usize];
+            csm1 = bsm1[temp_klim as usize];
+            csm2 = bsm2[temp_klim as usize];
+            ysm1 = xsm1[temp_klim as usize];
+            ysm2 = xsm2[temp_klim as usize];
+            ysm3 = xsm3[temp_klim as usize];
+            csp1 = bsp1[temp_klim as usize];
+            csp2 = bsp2[temp_klim as usize];
+            ysp1 = xsp1[temp_klim as usize];
+            ysp2 = xsp2[temp_klim as usize];
+            ysp3 = xsp3[temp_klim as usize];
+            csd1 = bsd1[temp_klim as usize];
+            zd = bzd1[temp_klim as usize];
+            cfm1 = bfm1[temp_klim as usize];
+            cfm2 = bfm2[temp_klim as usize];
+            cfm3 = bfm3[temp_klim as usize];
+            cfp1 = bfp1[temp_klim as usize];
+            cfp2 = bfp2[temp_klim as usize];
+            cfp3 = bfp3[temp_klim as usize];
+        }
+
         match propv.lvar {
             //switch (propv.lvar) {
             4 => {
@@ -1057,37 +1091,7 @@ unsafe fn avar(zzt: f64, zzl: f64, zzc: f64, prop: &mut PropType, propv: &mut Pr
                 }
             }
 
-            _ => {
-                if propv.klim <= 0 || propv.klim > 7 {
-                    propv.klim = 5;
-                    temp_klim = 4;
-                    prop.kwx = i32::max(prop.kwx, 2);
-                }
-
-                cv1 = bv1[temp_klim as usize];
-                cv2 = bv2[temp_klim as usize];
-                yv1 = xv1[temp_klim as usize];
-                yv2 = xv2[temp_klim as usize];
-                yv3 = xv3[temp_klim as usize];
-                csm1 = bsm1[temp_klim as usize];
-                csm2 = bsm2[temp_klim as usize];
-                ysm1 = xsm1[temp_klim as usize];
-                ysm2 = xsm2[temp_klim as usize];
-                ysm3 = xsm3[temp_klim as usize];
-                csp1 = bsp1[temp_klim as usize];
-                csp2 = bsp2[temp_klim as usize];
-                ysp1 = xsp1[temp_klim as usize];
-                ysp2 = xsp2[temp_klim as usize];
-                ysp3 = xsp3[temp_klim as usize];
-                csd1 = bsd1[temp_klim as usize];
-                zd = bzd1[temp_klim as usize];
-                cfm1 = bfm1[temp_klim as usize];
-                cfm2 = bfm2[temp_klim as usize];
-                cfm3 = bfm3[temp_klim as usize];
-                cfp1 = bfp1[temp_klim as usize];
-                cfp2 = bfp2[temp_klim as usize];
-                cfp3 = bfp3[temp_klim as usize];
-            }
+            _ => {}
         } // End match
           // NOTE: Warning - this switch didn't have break, so it may need to handle falling through?
 
