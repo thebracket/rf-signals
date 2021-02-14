@@ -98,7 +98,7 @@ pub(crate) fn saalos(d: f64, prop: &PropType) -> f64 {
     let mut hc;
     let mut cttc = 0.0;
 
-    q = 0.0;
+    //q = 0.0; // Never read after assignment
 
     if d == 0.0 {
         //tsp = 1.0;
@@ -400,7 +400,7 @@ pub(crate) fn z1sq2(z: &[f64], x1: f64, x2: f64, z0: &mut f64, zn: &mut f64) {
         xb = xn - fortran_dim(xn, xb + 1.0);
     }
 
-    ja = xa as i32;
+    //ja = xa as i32; // Never read?
     jb = xb as i32;
     xa = (2.0 * ((xb - xa) / 2.0)) - 1.0; // Note that there were some whacky type conversions here
     x = -0.5 * (xa + 1.0);
@@ -494,7 +494,7 @@ pub(crate) fn qtile(nn: i32, a: &mut [f64], ir: i32) -> f64 {
     let mut r;
     let mut m;
     let mut n;
-    let mut i = 0;
+    let mut i;
     let mut j;
     let mut j1 = 0;
     let mut i0 = 0;
@@ -587,9 +587,9 @@ pub(crate) fn fht(x: f64, pk: f64) -> f64 {
 
 pub(crate) fn alos2(d: f64, prop: &mut PropType) -> f64 {
     let prop_zgnd = Complex::new(prop.zgndreal, prop.zgndimag);
-    let mut r = Complex::new(0.0, 0.0);
-    let mut cd;
-    let mut cr;
+    let mut r;
+    let cd;
+    let cr;
     let dr;
     let hr;
     let hrg;
@@ -605,8 +605,8 @@ pub(crate) fn alos2(d: f64, prop: &mut PropType) -> f64 {
     /* int rp; */
     let mut alosv;
 
-    cd = 0.0;
-    cr = 0.0;
+    //cd = 0.0; // Never read after assignment
+    //cr = 0.0;
     htg = prop.hg[0];
     hrg = prop.hg[1];
     ht = prop.ght;

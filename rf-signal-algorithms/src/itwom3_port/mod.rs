@@ -322,7 +322,7 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
         }
 
         dmin = (prop.he[0] - prop.he[1]).abs() / 200e-3;
-        q = adiff2(0.0, prop, propa);
+        //q = adiff2(0.0, prop, propa); // Commented out - apparently unused?
         xae = pow(prop.wn * (prop.gme * prop.gme), -THIRD);
         d3 = mymax(propa.dlsa, 1.3787 * xae + propa.dla);
         d4 = d3 + 2.7574 * xae;
