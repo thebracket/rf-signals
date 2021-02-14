@@ -1,3 +1,6 @@
+// Temporarily mute warnings I'll be fixing in a different way
+#![allow(non_upper_case_globals)]
+
 use num_complex::Complex;
 mod helpers;
 use helpers::*;
@@ -265,7 +268,7 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
     let  d5;
     let  d6;
     let mut wq;
-    let mut q;
+    let q;
 
     iw = prop.tiw;
     pd1 = prop.dist;
@@ -358,7 +361,7 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
             /* if interval width is zero or less, used for area mode */
 
             if !wlos {
-                q = alos2(0.0, prop);
+                //q = alos2(0.0, prop); // Non used
                 d2 = propa.dlsa;
                 a2 = propa.aed + d2 * propa.emd;
                 d0 = 1.908 * prop.wn * prop.he[0] * prop.he[1];
@@ -418,7 +421,7 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
             /* for ITWOM point-to-point mode */
 
             if !wlos {
-                q = alos2(0.0, prop); /* coefficient setup */
+                //q = alos2(0.0, prop); /* coefficient setup */ // This is written but never read
                 wlos = true;
             }
 
@@ -431,7 +434,7 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
                     prop.aref = 5.8 + alos2(pd1, prop);
                 } else if (prop.dist - prop.dl[0]).floor() > 0.0 {
                     /* if past 1st horiz */
-                    q = adiff2(0.0, prop, propa);
+                    //q = adiff2(0.0, prop, propa); // This is written but never read
                     prop.aref = adiff2(pd1, prop, propa);
                 } else {
                     prop.aref = 1.0;
@@ -445,7 +448,7 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
         if iw == 0.0 {
             /* area mode */
             if !wscat {
-                q = ascat(0.0, prop, propa);
+                //q = ascat(0.0, prop, propa); // Written but never read
                 d5 = propa.dla + 200e3;
                 d6 = d5 + 200e3;
                 a6 = ascat(d6, prop, propa);
@@ -479,11 +482,11 @@ unsafe fn lrprop2(d: f64, prop: &mut PropType, propa: &mut PropAType) {
             /* ITWOM mode  q used to preset coefficients with zero input */
 
             if !wscat {
-                d5 = 0.0;
-                d6 = 0.0;
-                q = ascat(0.0, prop, propa);
+                //d5 = 0.0;
+                //d6 = 0.0; // Both written but never read
+                //q = ascat(0.0, prop, propa); // Written but never read
                 a6 = ascat(pd1, prop, propa);
-                q = adiff2(0.0, prop, propa);
+                //q = adiff2(0.0, prop, propa); // Written but never read
                 a5 = adiff2(pd1, prop, propa);
 
                 if a5 <= a6 {
@@ -536,7 +539,6 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
     let mut rd;
     let ds;
     let dsl;
-    let th;
     let mut wa;
     let sf2;
     let mut vv;
@@ -570,8 +572,8 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
         /* coefficients for a standard four radii, rounded earth computation are prepared */
         wd1 = (1.0 + qk / q).sqrt();
         xd1 = propa.dla + propa.tha / prop.gme;
-        q = (1.0 - 0.8 * (-propa.dlsa / 50e3).exp()) * prop.dh;
-        q *= 0.78 * (-pow(q / 16.0, 0.25)).exp();
+        //q = (1.0 - 0.8 * (-propa.dlsa / 50e3).exp()) * prop.dh;
+        //q *= 0.78 * (-pow(q / 16.0, 0.25)).exp(); // Written but never read
         qk = 1.0 / prop_zgnd.norm();
         aht = 20.0;
         xht = 0.0;
@@ -595,13 +597,13 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
         }
         adiffv2 = 0.0;
     } else {
-        th = propa.tha + d * prop.gme;
+        // th = propa.tha + d * prop.gme;// Written but never read
 
         dsl = mymax(d - propa.dla, 0.0);
         ds = d - propa.dla;
-        a = ds / th;
-        wa = pow(a * prop.wn, THIRD);
-        pk = qk / wa;
+        //a = ds / th; // Written but never read
+        //wa = pow(a * prop.wn, THIRD); // Written but never read
+        //pk = qk / wa; // Written but never read
         toh = prop.hht - (prop.rch[0] - prop.dl[0] * ((prop.rch[1] - prop.rch[0]) / prop.dist));
         roh = prop.hhr
             - (prop.rch[0] - (prop.dist - prop.dl[1]) * ((prop.rch[1] - prop.rch[0]) / prop.dist));
@@ -650,12 +652,12 @@ unsafe fn adiff2(d: f64, prop: &mut PropType, propa: &PropAType) -> f64 {
             if prop.dl[1].floor() > 0.0 {
                 /* receive site past 2nd peak */
                 /* rounding attenuation */
-                q = (1.607 - pk) * 151.0 * wa * th + xht;
+                //q = (1.607 - pk) * 151.0 * wa * th + xht; // Written but never read
                 /* ar=0.05751*q-10*log10(q)-aht; */
 
                 /* knife edge vs round weighting */
-                q = (1.0 - 0.8 * exp(-d / 50e3)) * prop.dh;
-                q = (wd1 + xd1 / d) * f64::min(q * prop.wn, 6283.2);
+                //q = (1.0 - 0.8 * exp(-d / 50e3)) * prop.dh;
+                //q = (wd1 + xd1 / d) * f64::min(q * prop.wn, 6283.2); // Written but never read
                 /* wd=25.1/(25.1+sqrt(q)); */
 
                 q = 0.6365 * prop.wn;
@@ -992,55 +994,24 @@ unsafe fn avar(zzt: f64, zzl: f64, zzc: f64, prop: &mut PropType, propv: &mut Pr
     static mut ws: bool = false;
     static mut w1: bool = false;
     //static thread_local bool ws, w1;
-    let mut rt = 7.8;
-    let mut rl = 24.0;
+    let rt = 7.8;
+    let rl = 24.0;
     let mut avarv;
     let mut q;
-    let mut vs;
+    let vs;
     let mut zt;
     let mut zl;
-    let mut zc;
-    let mut sgt;
-    let mut yr;
+    let zc;
+    let sgt;
+    let yr;
     let mut temp1;
-    let mut temp2;
+    let temp2;
     let mut temp_klim = propv.klim - 1;
 
     if propv.lvar > 0 {
+        // TODO: Check this - it had no breaks?
         match propv.lvar {
             //switch (propv.lvar) {
-            _ => {
-                if propv.klim <= 0 || propv.klim > 7 {
-                    propv.klim = 5;
-                    temp_klim = 4;
-                    prop.kwx = i32::max(prop.kwx, 2);
-                }
-
-                cv1 = bv1[temp_klim as usize];
-                cv2 = bv2[temp_klim as usize];
-                yv1 = xv1[temp_klim as usize];
-                yv2 = xv2[temp_klim as usize];
-                yv3 = xv3[temp_klim as usize];
-                csm1 = bsm1[temp_klim as usize];
-                csm2 = bsm2[temp_klim as usize];
-                ysm1 = xsm1[temp_klim as usize];
-                ysm2 = xsm2[temp_klim as usize];
-                ysm3 = xsm3[temp_klim as usize];
-                csp1 = bsp1[temp_klim as usize];
-                csp2 = bsp2[temp_klim as usize];
-                ysp1 = xsp1[temp_klim as usize];
-                ysp2 = xsp2[temp_klim as usize];
-                ysp3 = xsp3[temp_klim as usize];
-                csd1 = bsd1[temp_klim as usize];
-                zd = bzd1[temp_klim as usize];
-                cfm1 = bfm1[temp_klim as usize];
-                cfm2 = bfm2[temp_klim as usize];
-                cfm3 = bfm3[temp_klim as usize];
-                cfp1 = bfp1[temp_klim as usize];
-                cfp2 = bfp2[temp_klim as usize];
-                cfp3 = bfp3[temp_klim as usize];
-            }
-
             4 => {
                 //case 4:
                 kdv = propv.mdvar;
@@ -1084,6 +1055,38 @@ unsafe fn avar(zzt: f64, zzl: f64, zzc: f64, prop: &mut PropType, propv: &mut Pr
                 } else {
                     de = 130e3 + prop.dist - dexa;
                 }
+            }
+
+            _ => {
+                if propv.klim <= 0 || propv.klim > 7 {
+                    propv.klim = 5;
+                    temp_klim = 4;
+                    prop.kwx = i32::max(prop.kwx, 2);
+                }
+
+                cv1 = bv1[temp_klim as usize];
+                cv2 = bv2[temp_klim as usize];
+                yv1 = xv1[temp_klim as usize];
+                yv2 = xv2[temp_klim as usize];
+                yv3 = xv3[temp_klim as usize];
+                csm1 = bsm1[temp_klim as usize];
+                csm2 = bsm2[temp_klim as usize];
+                ysm1 = xsm1[temp_klim as usize];
+                ysm2 = xsm2[temp_klim as usize];
+                ysm3 = xsm3[temp_klim as usize];
+                csp1 = bsp1[temp_klim as usize];
+                csp2 = bsp2[temp_klim as usize];
+                ysp1 = xsp1[temp_klim as usize];
+                ysp2 = xsp2[temp_klim as usize];
+                ysp3 = xsp3[temp_klim as usize];
+                csd1 = bsd1[temp_klim as usize];
+                zd = bzd1[temp_klim as usize];
+                cfm1 = bfm1[temp_klim as usize];
+                cfm2 = bfm2[temp_klim as usize];
+                cfm3 = bfm3[temp_klim as usize];
+                cfp1 = bfp1[temp_klim as usize];
+                cfp2 = bfp2[temp_klim as usize];
+                cfp3 = bfp3[temp_klim as usize];
             }
         } // End match
           // NOTE: Warning - this switch didn't have break, so it may need to handle falling through?
@@ -1179,7 +1182,6 @@ unsafe fn avar(zzt: f64, zzl: f64, zzc: f64, prop: &mut PropType, propv: &mut Pr
 mod test {
     use super::point_to_point;
     use crate::{PTPClimate, PTPPath};
-    use float_cmp::approx_eq;
 
     #[test]
     fn basic_fspl_test() {
