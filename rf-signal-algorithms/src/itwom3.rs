@@ -1,3 +1,5 @@
+use super::{Distance, Frequency};
+
 fn point_to_point(
     elev: &mut [f64],
     tht_m: f64,
@@ -64,8 +66,8 @@ pub enum PTPError {
 #[derive(Debug)]
 pub struct PTPPath {
     pub elevations: Vec<f64>,
-    pub transmit_height: f64,
-    pub receive_height: f64,
+    pub transmit_height: Distance,
+    pub receive_height: Distance,
 }
 
 impl PTPPath {
@@ -73,11 +75,11 @@ impl PTPPath {
     /// used by the C algorithm.
     pub fn new(
         elevations: Vec<f64>,
-        transmit_height: f64,
-        receive_height: f64,
-        step_size_meters: f64,
+        transmit_height: Distance,
+        receive_height: Distance,
+        step_size: Distance,
     ) -> Result<Self, PTPError> {
-        let total_distance: f64 = elevations.len() as f64 * step_size_meters;
+        let total_distance: f64 = elevations.len() as f64 * step_size.as_meters();
         if total_distance < 1000.0 {
             return Err(PTPError::DistanceTooShort);
         } else if total_distance > 2000000.0 {
@@ -99,7 +101,7 @@ impl PTPPath {
         };
 
         // Index 0 is the number of elements, next up is the distance per step
-        path.elevations.insert(0, step_size_meters);
+        path.elevations.insert(0, step_size.as_meters());
         path.elevations
             .insert(0, path.elevations.len() as f64 - 3.0);
 
@@ -194,19 +196,19 @@ impl PTPClimate {
 pub fn itwom_point_to_point(
     path: &mut PTPPath,
     climate: PTPClimate,
-    frequency_mhz: f64,
+    frequency: Frequency,
     confidence: f64,
     rel: f64,
     polarity: i32,
 ) -> PTPResult {
     point_to_point(
         &mut path.elevations,
-        path.transmit_height,
-        path.receive_height,
+        path.transmit_height.as_meters(),
+        path.receive_height.as_meters(),
         climate.eps_dialect,
         climate.sgm_conductivity,
         climate.eno_ns_surfref,
-        frequency_mhz,
+        frequency.as_mhz(),
         climate.radio_climate,
         polarity,
         confidence,
@@ -221,7 +223,13 @@ mod test {
     #[test]
     fn test_too_short() {
         assert_eq!(
-            PTPPath::new(vec![1.0; 2], 100.0, 100.0, 10.0).err(),
+            PTPPath::new(
+                vec![1.0; 2],
+                Distance::with_meters(100.0),
+                Distance::with_meters(100.0),
+                Distance::with_meters(10.0)
+            )
+            .err(),
             Some(PTPError::DistanceTooShort)
         );
     }
@@ -229,7 +237,13 @@ mod test {
     #[test]
     fn test_too_long() {
         assert_eq!(
-            PTPPath::new(vec![1.0; 2000000], 100.0, 100.0, 10.0).err(),
+            PTPPath::new(
+                vec![1.0; 2000000],
+                Distance::with_meters(100.0),
+                Distance::with_meters(100.0),
+                Distance::with_meters(10.0)
+            )
+            .err(),
             Some(PTPError::DistanceTooLong)
         );
     }
@@ -237,7 +251,13 @@ mod test {
     #[test]
     fn altitudes_too_low() {
         assert_eq!(
-            PTPPath::new(vec![0.4; 200], 100.0, 100.0, 10.0).err(),
+            PTPPath::new(
+                vec![0.4; 200],
+                Distance::with_meters(100.0),
+                Distance::with_meters(100.0),
+                Distance::with_meters(10.0)
+            )
+            .err(),
             Some(PTPError::AltitudeTooLow)
         );
     }
@@ -245,7 +265,13 @@ mod test {
     #[test]
     fn altitudes_too_high() {
         assert_eq!(
-            PTPPath::new(vec![3500.0; 200], 100.0, 100.0, 10.0).err(),
+            PTPPath::new(
+                vec![3500.0; 200],
+                Distance::with_meters(100.0),
+                Distance::with_meters(100.0),
+                Distance::with_meters(10.0)
+            )
+            .err(),
             Some(PTPError::AltitudeTooHigh)
         );
     }
@@ -253,16 +279,17 @@ mod test {
     #[test]
     fn basic_fspl_test() {
         let mut terrain_path = PTPPath::new(
-            vec![1.0; 200], 
-            100.0, 
-            100.0, 
-            10.0
-        ).unwrap();
+            vec![1.0; 200],
+            Distance::with_meters(100.0),
+            Distance::with_meters(100.0),
+            Distance::with_meters(10.0),
+        )
+        .unwrap();
 
         let itwom_test = itwom_point_to_point(
             &mut terrain_path,
             PTPClimate::default(),
-            5800.0,
+            Frequency::with_mhz(5800.0),
             0.5,
             0.5,
             1,
@@ -277,12 +304,18 @@ mod test {
     fn basic_one_obstruction() {
         let mut elevations = vec![1.0; 200];
         elevations[100] = 110.0;
-        let mut terrain_path = PTPPath::new(elevations, 100.0, 100.0, 10.0).unwrap();
+        let mut terrain_path = PTPPath::new(
+            elevations,
+            Distance::with_meters(100.0),
+            Distance::with_meters(100.0),
+            Distance::with_meters(10.0),
+        )
+        .unwrap();
 
         let itwom_test = itwom_point_to_point(
             &mut terrain_path,
             PTPClimate::default(),
-            5800.0,
+            Frequency::with_mhz(5800.0),
             0.5,
             0.5,
             1,
@@ -297,12 +330,18 @@ mod test {
         let mut elevations = vec![1.0; 200];
         elevations[100] = 110.0;
         elevations[150] = 110.0;
-        let mut terrain_path = PTPPath::new(elevations, 100.0, 100.0, 10.0).unwrap();
+        let mut terrain_path = PTPPath::new(
+            elevations,
+            Distance::with_meters(100.0),
+            Distance::with_meters(100.0),
+            Distance::with_meters(10.0),
+        )
+        .unwrap();
 
         let itwom_test = itwom_point_to_point(
             &mut terrain_path,
             PTPClimate::default(),
-            5800.0,
+            Frequency::with_mhz(5800.0),
             0.5,
             0.5,
             1,
