@@ -95,7 +95,7 @@ pub(crate) struct ItWomState {
 impl ItWomState {
     pub(crate) fn point_to_point(
         &mut self,
-        elev: &Vec<f64>,
+        elev: &[f64],
         tht_m: f64,
         rht_m: f64,
         eps_dielect: f64,

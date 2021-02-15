@@ -2,7 +2,7 @@ mod units;
 pub use units::{Distance, Frequency};
 mod itwom3;
 pub use itwom3::{
-    GroundConductivity, ItwomPointToPoint, PTPClimate, PTPPath, PTPResult, RadioClimate,
+    GroundConductivity, itwom_point_to_point, PTPClimate, PTPPath, PTPResult, RadioClimate,
 };
 mod fspl;
 mod itwom3_port;
@@ -50,9 +50,4 @@ impl EstimateMode {
             EstimateMode::Open => 3,
         }
     }
-}
-
-// Include the C library for use in child modules.
-mod c {
-    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }

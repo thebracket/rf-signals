@@ -162,7 +162,7 @@ fn main() {
     )
     .unwrap();
 
-    let itwom_test = ItwomPointToPoint(
+    let itwom_test = itwom_point_to_point(
         &mut terrain_path,
         PTPClimate::default(),
         FREQ_MHZ as f64,

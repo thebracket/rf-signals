@@ -14,7 +14,7 @@ I've retained the GPL2 license, because the parent requires it. I needed this fo
 |Fresnel Zone|Pure Rust (not in original)|
 |FSPL        |Pure Rust|
 |HATA        |Ported to Pure Rust|
-|ITWOM3      |C Only   |
+|ITWOM3      |Ported to Pure Rust|
 |Plane Earth |Ported to Pure Rust|
 |SOIL        |Ported to Pure Rust|
 |SUI         |Ported to Pure Rust|
