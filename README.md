@@ -4,7 +4,27 @@ This is a Rust wrapper for [Cloud-RF/Signal Server](https://github.com/Cloud-RF/
 
 I've retained the GPL2 license, because the parent requires it. I needed this for work, I'm hoping someone finds it useful.
 
+## Support Algorithms
+
+This crate provides Rust implementations of a number of algorithms that are useful in wireless calculations:
+
+* ITM3/Longley-Rice - the power behind Splat! and other functions.
+* HATA with the COST123 extension.
+* ECC33.
+* EGLI.
+* HATA.
+* Plane Earth.
+* SOIL.
+* SUI.
+
+Additionally, helper functions provide:
+
+* Basic Free-Space Path Loss (FSPL) calculation.
+* Fresnel size calculation.
+
 ## Porting Status
+
+All algorithms started out in Cloud_RF's Signal Server (in C or C++) and were ported to Rust.
 
 |Algorithm   |Status   |
 |------------|---------|
