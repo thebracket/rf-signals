@@ -6,6 +6,10 @@ edition = "2018"
 description = "Rust wrapper for https://github.com/Cloud-RF/Signal-Server signal algorithms."
 readme = "README.md"
 license = "GPL2"
+repository = "https://github.com/thebracket/rf-signals"
+keywords = ["rf", "radio", "longley-rice"]
+categories = [ "algorithms" ]
+publish = true
 
 [dependencies]
 num-complex = "0.3.1"
