@@ -1,4 +1,4 @@
-use rf_signal_algorithms::{sui_path_loss, Distance, Frequency, EstimateMode};
+use rf_signal_algorithms::{sui_path_loss, Distance, EstimateMode, Frequency};
 
 const DISTANCE_METERS: f32 = 1000.0;
 const FREQ_MHZ: f32 = 1500.0;

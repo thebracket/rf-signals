@@ -252,7 +252,12 @@ mod test {
 
     #[test]
     fn basic_fspl_test() {
-        let mut terrain_path = PTPPath::new(vec![1.0; 200], 100.0, 100.0, 10.0).unwrap();
+        let mut terrain_path = PTPPath::new(
+            vec![1.0; 200], 
+            100.0, 
+            100.0, 
+            10.0
+        ).unwrap();
 
         let itwom_test = itwom_point_to_point(
             &mut terrain_path,

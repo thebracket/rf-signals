@@ -2,7 +2,7 @@ mod units;
 pub use units::{Distance, Frequency};
 mod itwom3;
 pub use itwom3::{
-    GroundConductivity, itwom_point_to_point, PTPClimate, PTPPath, PTPResult, RadioClimate,
+    itwom_point_to_point, GroundConductivity, PTPClimate, PTPPath, PTPResult, RadioClimate,
 };
 mod fspl;
 mod itwom3_port;

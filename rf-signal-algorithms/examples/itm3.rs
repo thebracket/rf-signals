@@ -1,7 +1,7 @@
-use rf_signal_algorithms::{PTPClimate, PTPPath, itwom_point_to_point};
+use rf_signal_algorithms::{itwom_point_to_point, PTPClimate, PTPPath};
 
 const FREQ_MHZ: f32 = 5840.0;
-const XMIT_HEIGHT: f32 =3.0;
+const XMIT_HEIGHT: f32 = 3.0;
 const RECV_HEIGHT: f32 = 30.0;
 const TERRAIN_STEP: f64 = 10.0;
 

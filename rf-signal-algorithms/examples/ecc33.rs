@@ -1,4 +1,4 @@
-use rf_signal_algorithms::{ecc33_path_loss, Frequency, Distance, EstimateMode};
+use rf_signal_algorithms::{ecc33_path_loss, Distance, EstimateMode, Frequency};
 
 const DISTANCE_METERS: f32 = 1000.0;
 const XMIT_HEIGHT: f32 = 30.0;

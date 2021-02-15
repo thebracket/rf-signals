@@ -1,4 +1,4 @@
-use rf_signal_algorithms::{egli_path_loss, Frequency, Distance};
+use rf_signal_algorithms::{egli_path_loss, Distance, Frequency};
 
 const DISTANCE_METERS: f32 = 1000.0;
 const XMIT_HEIGHT: f32 = 30.0;

@@ -1,4 +1,4 @@
-use super::{Frequency, Distance};
+use super::{Distance, Frequency};
 
 /// Calculate the pure free-space path loss in dB of a signal and distance.
 pub fn free_space_path_loss_db(frequency: Frequency, distance: Distance) -> f64 {
@@ -9,7 +9,7 @@ pub fn free_space_path_loss_db(frequency: Frequency, distance: Distance) -> f64 
 
 #[cfg(test)]
 mod test {
-    use super::{free_space_path_loss_db, Frequency, Distance};
+    use super::{free_space_path_loss_db, Distance, Frequency};
 
     #[test]
     fn test_fpl() {
