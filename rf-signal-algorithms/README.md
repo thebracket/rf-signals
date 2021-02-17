@@ -22,6 +22,19 @@ Additionally, helper functions provide:
 * Basic Free-Space Path Loss (FSPL) calculation.
 * Fresnel size calculation.
 
+## SRTM .hgt Reader
+
+There's also an SRTM .hgt reader. You can get these from various places for pretty much the whole planet. See Radio Mobile for details. This will eventually be in its own feature. For now, it maintains an LRU cache of height tiles and tries to find the best resolution available to answer an elevation query.
+
+An example query:
+
+```rust
+let loc = LatLon::new(38.947775, -92.323385);
+let altitude = get_altitude(&loc, "resources");
+```
+
+This requires the `hgt` files from the `resources` directory to function.
+
 ## Porting Status
 
 All algorithms started out in Cloud_RF's Signal Server (in C or C++) and were ported to Rust.
