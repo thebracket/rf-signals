@@ -39,7 +39,7 @@ impl LatLon {
         LatLon(Point::new(pt.lat() / DEG_RAD, pt.lng() / DEG_RAD))
     }
 
-    fn floor(&self) -> LatLon {
+    pub fn floor(&self) -> LatLon {
         LatLon::new(self.0.lat().floor(), self.0.lng().floor())
     }
 

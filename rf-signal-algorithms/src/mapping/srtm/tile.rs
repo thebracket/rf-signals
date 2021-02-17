@@ -1,4 +1,4 @@
-use crate::latlon::LatLon;
+use crate::LatLon;
 use std::path::Path;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

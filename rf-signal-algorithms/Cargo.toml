@@ -9,11 +9,20 @@ license = "GPL2"
 repository = "https://github.com/thebracket/rf-signals"
 keywords = ["rf", "radio", "longley-rice"]
 categories = [ "algorithms" ]
-publish = true
+publish = false
+
+#default-features = [ "srtm" ]
+
+#[features]
+#srtm = [ "geo", "lru", "lazy_static", "parking_lot", "memmap" ]
 
 [dependencies]
 num-complex = "0.3.1"
-geo = "0.17.0"
+geo = { version =  "0.17.0", optional = false }
+lru = { version = "0.6.5", optional = false }
+lazy_static = { version = "1.4.0", optional = false }
+parking_lot = { version = "0.11.0", optional = false }
+memmap = { version = "0.7.0", optional = false }
 
 [dev-dependencies]
 float-cmp = "0.8"
