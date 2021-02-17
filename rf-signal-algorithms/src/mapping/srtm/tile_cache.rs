@@ -104,3 +104,19 @@ fn get_elevation(loc: &LatLon, tile: &SrtmTile, memory: &Mmap) -> Distance {
     };
     Distance::with_meters(h)
 }
+
+#[cfg(test)]
+mod test {
+    use super::get_altitude;
+    use super::LatLon;
+
+    #[test]
+    fn test_srtm_third_elevation() {
+        let loc = LatLon::new(38.947775, -92.323385);
+        let altitude = get_altitude(&loc, "resources");
+        assert!(altitude.is_some());
+        if let Some(alt) = altitude {
+            assert_eq!(alt.as_meters(), 232.0);
+        }
+    }
+}
