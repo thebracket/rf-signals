@@ -73,6 +73,9 @@ fn main() {
 
     *WISP.write() = wisp_def;
 
+    println!("Indexing LiDAR Data - Please Wait");
+    rf_signal_algorithms::lidar::index_all_lidar("z:/lidarserver/terrain/lidar");
+
     rocket::ignite()
         .mount("/", routes![index, tower_marker, towers, heightmap, losmap])
         .launch();

@@ -2,7 +2,7 @@ use std::io::Read;
 use std::io::{Cursor, Seek, SeekFrom};
 
 use super::TILE_SIZE;
-use rf_signal_algorithms::{srtm::get_altitude, Distance, LatLon};
+use rf_signal_algorithms::{Distance, LatLon, lidar::lidar_elevation, srtm::get_altitude};
 
 pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
@@ -32,9 +32,12 @@ pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8>
             (
                 *x,
                 *y,
-                get_altitude(p, "z:/lidarserver/terrain")
-                    .unwrap_or(Distance::with_meters(0))
-                    .as_meters(),
+                f64::max(
+                    get_altitude(p, "z:/lidarserver/terrain")
+                            .unwrap_or(Distance::with_meters(0))
+                        .as_meters(),
+                    lidar_elevation(&p)
+                )
             )
         })
         .collect();

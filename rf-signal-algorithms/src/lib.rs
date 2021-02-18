@@ -11,6 +11,10 @@ pub mod srtm {
     pub use crate::mapping::srtm::*;
 }
 
+pub mod lidar {
+    pub use crate::mapping::lidar::*;
+}
+
 //#[cfg(feature = "srtm")]
 pub use mapping::latlon::LatLon;
 

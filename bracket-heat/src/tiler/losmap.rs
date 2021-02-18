@@ -2,7 +2,7 @@ use std::io::Read;
 use std::io::{Cursor, Seek, SeekFrom};
 
 use super::TILE_SIZE;
-use rf_signal_algorithms::{Distance, LatLon, geometry::{haversine_distance, haversine_intermediate}, srtm::get_altitude};
+use rf_signal_algorithms::{Distance, LatLon, geometry::{haversine_distance, haversine_intermediate}, lidar::lidar_elevation, srtm::get_altitude};
 use rocket::http::ext;
 use crate::WISP;
 
@@ -56,7 +56,12 @@ pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8> {
 
                 let los_path : Vec<f64> = path
                     .iter()
-                    .map(|p| get_altitude(p, "z:/lidarserver/terrain").unwrap_or(Distance::with_meters(0)).as_meters())
+                    .map(|p| 
+                        f64::max(
+                            get_altitude(p, "z:/lidarserver/terrain").unwrap_or(Distance::with_meters(0)).as_meters(),
+                            lidar_elevation(&p)
+                        )
+                    )
                     .collect();
 
                 if !los_path.is_empty() {
