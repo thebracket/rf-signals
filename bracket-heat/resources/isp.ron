@@ -1,5 +1,14 @@
 Wisp(
     name: "iZones LLC",
     center: (38.947775, -92.323385),
-    map_zoom: 10
+    map_zoom: 10,
+
+    towers: [
+        Tower(
+            name: "Paquin",
+            lat: 38.947927398900426,
+            lon: -92.3233740822584,
+            height_meters: 55,
+        )
+    ]
 )

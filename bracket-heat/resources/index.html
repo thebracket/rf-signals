@@ -24,6 +24,7 @@
         const CenterLon = _CENTER_LON_;
         const MapZoomDefault = _MAP_ZOOM_;
         const map_center = {lat: CenterLat, lng: CenterLon};
+        let towerList = [];
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -31,6 +32,21 @@
                 center: map_center
             });
             map.setTilt(0);
+            loadTowers();
+        }
+
+        function loadTowers() {
+            $.get("/towers", function(data) {
+                for (var i=0; i<data.length; i++) {
+                    data[i].marker = new google.maps.Marker({
+                        position: { lat: data[i].lat, lng: data[i].lon },
+                        map: map,
+                        icon: 'tower_Marker.png',
+                        title: data[i].name
+                    });
+                }
+                towerList = data;
+            });
         }
     </script>
 
