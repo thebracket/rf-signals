@@ -33,6 +33,7 @@
 
     <div id="GroundControl">
         <span id="netName" style="font-weight: bold; font-size: 8pt;"></span>
+        <button id="btnNone">None</button>
         <button id="btnHeight">Height</button>
     </div>
 
@@ -73,11 +74,15 @@
 
         function removeCurrentOverlay() {
             if (currentOverlay != null) {
-                currentOverlay.map = null;
+                currentOverlay.setMap(null);
+                currentOverlay = null;
             }
         }
 
         function bindHeight() {
+            $("#btnNone").click(function() {
+                removeCurrentOverlay();
+            });
             $("#btnHeight").click(function() {
                 removeCurrentOverlay();
                 let bounds = map.getBounds();
@@ -90,7 +95,10 @@
             constructor(bounds) {
                 super();
                 this.bounds = bounds;
-                this.image = "tower_Marker.png"
+                let sw = bounds.getSouthWest();
+                let ne = bounds.getNorthEast();
+                let url = "heightmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng();
+                this.image = url;
             }
 
             onAdd() {

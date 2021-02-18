@@ -47,7 +47,7 @@ impl SrtmTile {
     pub fn filename(&self, terrain_path: &str) -> String {
         match self {
             SrtmTile::Srtm1 { lat, lon } => format!(
-                "{}/srtm1/{}{:02}{}{:03}.hgt",
+                "{}/1/{}{:02}{}{:03}.hgt",
                 terrain_path,
                 if *lat >= 0 { 'N' } else { 'S' },
                 lat.abs(),
@@ -55,7 +55,7 @@ impl SrtmTile {
                 lon.abs()
             ),
             SrtmTile::Srtm3 { lat, lon } => format!(
-                "{}/srtm3/{}{:02}{}{:03}.hgt",
+                "{}/3/{}{:02}{}{:03}.hgt",
                 terrain_path,
                 if *lat >= 0 { 'N' } else { 'S' },
                 lat.abs(),
@@ -68,7 +68,7 @@ impl SrtmTile {
                 lat_tile,
                 lon_tile,
             } => format!(
-                "{}/srtm_third/{}{:02}{}{:03}T{:01}{:01}.hgt",
+                "{}/third/{}{:02}{}{:03}T{:01}{:01}.hgt",
                 terrain_path,
                 if *lat >= 0 { 'N' } else { 'S' },
                 lat.abs(),
@@ -88,14 +88,14 @@ mod tests {
     #[test]
     fn test_srtm1_filename() {
         let tile = SrtmTile::Srtm1 { lat: 38, lon: -93 };
-        let desired = "/srtm1/N38W093.hgt";
+        let desired = "/1/N38W093.hgt";
         assert_eq!(desired, tile.filename(""));
     }
 
     #[test]
     fn test_srtm3_filename() {
         let tile = SrtmTile::Srtm3 { lat: 38, lon: -93 };
-        let desired = "/srtm3/N38W093.hgt";
+        let desired = "/3/N38W093.hgt";
         assert_eq!(desired, tile.filename(""));
     }
 
@@ -107,7 +107,7 @@ mod tests {
             lat_tile: 9,
             lon_tile: 7,
         };
-        let desired = "/srtm_third/N38W093T97.hgt";
+        let desired = "/third/N38W093T97.hgt";
         assert_eq!(desired, tile.filename(""));
     }
 }
