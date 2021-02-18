@@ -14,11 +14,11 @@ use rocket::{http::ContentType, http::Status, response::content};
 use rocket_contrib::json::Json;
 
 // Data Storage Holders
-lazy_static!{
+lazy_static! {
     static ref INDEX_FINAL: RwLock<String> = RwLock::new(String::new());
 }
 
-lazy_static!{
+lazy_static! {
     static ref WISP: RwLock<Wisp> = RwLock::new(Wisp::default());
 }
 
@@ -53,11 +53,6 @@ fn main() {
     *WISP.write() = wisp_def;
 
     rocket::ignite()
-        .mount("/", routes![
-                index,
-                tower_marker,
-                towers,
-            ],
-        )
+        .mount("/", routes![index, tower_marker, towers,])
         .launch();
 }
