@@ -11,12 +11,30 @@
         #map {
             position: relative;
         }
+        #GroundControl {
+            position: absolute;
+            z-index: 500;
+            left: 300px;
+            top: 10px;
+            width: 355px;
+            height: 20px;
+            background-color: #eee;
+            border: 1px solid black;
+            border-radius: 4px;
+            padding: 4px;
+        }
     </style>
 </head>
 <body>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=_GMAPKEY_&libraries=&v=weekly"></script>
 
     <div id="map"></div>
+
+    <div id="GroundControl">
+        <span id="netName" style="font-weight: bold; font-size: 8pt;"></span>
+        <button id="btnHeight">Height</button>
+    </div>
 
     <script>
         const IspName = _ISP_NAME_;
@@ -25,6 +43,8 @@
         const MapZoomDefault = _MAP_ZOOM_;
         const map_center = {lat: CenterLat, lng: CenterLon};
         let towerList = [];
+        let map = null;
+        let currentOverlay = null;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -32,7 +52,9 @@
                 center: map_center
             });
             map.setTilt(0);
+            $("#netName").text(IspName);
             loadTowers();
+            bindHeight();
         }
 
         function loadTowers() {
@@ -48,9 +70,78 @@
                 towerList = data;
             });
         }
-    </script>
 
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=_GMAPKEY_&callback=initMap">
+        function removeCurrentOverlay() {
+            if (currentOverlay != null) {
+                currentOverlay.map = null;
+            }
+        }
+
+        function bindHeight() {
+            $("#btnHeight").click(function() {
+                removeCurrentOverlay();
+                let bounds = map.getBounds();
+                currentOverlay = new HeightOverlay(bounds);
+                currentOverlay.setMap(map);
+            });
+        }
+
+        class HeightOverlay extends google.maps.OverlayView {
+            constructor(bounds) {
+                super();
+                this.bounds = bounds;
+                this.image = "tower_Marker.png"
+            }
+
+            onAdd() {
+                this.div = document.createElement("div");
+                this.div.style.borderStyle = "none";
+                this.div.style.borderWidth = "0px";
+                this.div.style.position = "absolute";
+                // Create the img element and attach it to the div.
+                const img = document.createElement("img");
+                img.src = this.image;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.position = "absolute";
+                this.div.appendChild(img);
+                // Add the element to the "overlayLayer" pane.
+                const panes = this.getPanes();
+                panes.overlayLayer.appendChild(this.div);
+            }
+
+            draw() {
+                // We use the south-west and north-east
+                // coordinates of the overlay to peg it to the correct position and size.
+                // To do this, we need to retrieve the projection from the overlay.
+                const overlayProjection = this.getProjection();
+                // Retrieve the south-west and north-east coordinates of this overlay
+                // in LatLngs and convert them to pixel coordinates.
+                // We'll use these coordinates to resize the div.
+                const sw = overlayProjection.fromLatLngToDivPixel(
+                    this.bounds.getSouthWest()
+                );
+                const ne = overlayProjection.fromLatLngToDivPixel(
+                    this.bounds.getNorthEast()
+                );
+
+                // Resize the image's div to fit the indicated dimensions.
+                if (this.div) {
+                    this.div.style.left = sw.x + "px";
+                    this.div.style.top = ne.y + "px";
+                    this.div.style.width = ne.x - sw.x + "px";
+                    this.div.style.height = sw.y - ne.y + "px";
+                }
+            }
+
+            onRemove() {
+                if (this.div) {
+                    this.div.parentNode.removeChild(this.div);
+                    delete this.div;
+                }
+            }
+        }
+
+        $(document).ready(initMap);
     </script>
 </body>
