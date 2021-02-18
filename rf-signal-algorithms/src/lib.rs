@@ -19,3 +19,5 @@ pub use mapping::latlon::LatLon;
 pub mod geo {
     pub use geo::*;
 }
+
+pub mod geometry;

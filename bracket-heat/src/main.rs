@@ -49,6 +49,16 @@ fn heightmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a>
     response_build.finalize()
 }
 
+#[get("/losmap/<swlat>/<swlon>/<nelat>/<nelon>")]
+fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
+    let image_buffer = tiler::losmap_tile(swlat, swlon, nelat, nelon);
+    let mut response_build = Response::build();
+    response_build.header(ContentType::PNG);
+    response_build.status(Status::Ok);
+    response_build.streamed_body(std::io::Cursor::new(image_buffer));
+    response_build.finalize()
+}
+
 fn main() {
     let wisp_def = load_wisp();
 
@@ -64,6 +74,6 @@ fn main() {
     *WISP.write() = wisp_def;
 
     rocket::ignite()
-        .mount("/", routes![index, tower_marker, towers, heightmap])
+        .mount("/", routes![index, tower_marker, towers, heightmap, losmap])
         .launch();
 }

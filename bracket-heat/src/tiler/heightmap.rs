@@ -1,5 +1,5 @@
-use std::io::{Cursor, Seek, SeekFrom};
 use std::io::Read;
+use std::io::{Cursor, Seek, SeekFrom};
 
 use super::TILE_SIZE;
 use rf_signal_algorithms::{srtm::get_altitude, Distance, LatLon};
@@ -55,7 +55,8 @@ pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8>
 
     heights.iter().for_each(|(x, y, h)| {
         if *h > 0.0 {
-            let base = ((((TILE_SIZE-1) - *y) as usize * 4 * TILE_SIZE as usize) + ((*x) as usize * 4)) as usize;
+            let base = ((((TILE_SIZE - 1) - *y) as usize * 4 * TILE_SIZE as usize)
+                + ((*x) as usize * 4)) as usize;
             let n = ((*h - min_height) * h_scale) as u8;
             image_data[base] = n;
             image_data[base + 1] = n;

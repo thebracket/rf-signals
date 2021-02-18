@@ -35,6 +35,7 @@
         <span id="netName" style="font-weight: bold; font-size: 8pt;"></span>
         <button id="btnNone">None</button>
         <button id="btnHeight">Height</button>
+        <button id="btnLoS">L-o-S</button>
     </div>
 
     <script>
@@ -89,16 +90,17 @@
                 currentOverlay = new HeightOverlay(bounds);
                 currentOverlay.setMap(map);
             });
+            $("#btnLoS").click(function() {
+                removeCurrentOverlay();
+                let bounds = map.getBounds();
+                currentOverlay = new LosOverlay(bounds);
+                currentOverlay.setMap(map);
+            });
         }
 
-        class HeightOverlay extends google.maps.OverlayView {
+        class DynamicImageOverlay extends google.maps.OverlayView {
             constructor(bounds) {
                 super();
-                this.bounds = bounds;
-                let sw = bounds.getSouthWest();
-                let ne = bounds.getNorthEast();
-                let url = "heightmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng();
-                this.image = url;
             }
 
             onAdd() {
@@ -147,6 +149,28 @@
                     this.div.parentNode.removeChild(this.div);
                     delete this.div;
                 }
+            }
+        }
+
+        class HeightOverlay extends DynamicImageOverlay {
+            constructor(bounds) {
+                super();
+                this.bounds = bounds;
+                let sw = bounds.getSouthWest();
+                let ne = bounds.getNorthEast();
+                let url = "heightmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng();
+                this.image = url;
+            }
+        }
+
+        class LosOverlay extends DynamicImageOverlay {
+            constructor(bounds) {
+                super();
+                this.bounds = bounds;
+                let sw = bounds.getSouthWest();
+                let ne = bounds.getNorthEast();
+                let url = "losmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng();
+                this.image = url;
             }
         }
 

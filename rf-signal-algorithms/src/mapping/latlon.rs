@@ -17,6 +17,11 @@ impl LatLon {
         Self(Point::new(lon, lat))
     }
 
+    /// Retrieve a Geo::Point for the location
+    pub fn to_point(&self) -> Point<f64> {
+        self.0
+    }
+
     /// Retrieve Latitude
     pub fn lat(&self) -> f64 {
         self.0.lat()
