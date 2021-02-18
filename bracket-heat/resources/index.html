@@ -19,11 +19,16 @@
     <div id="map"></div>
 
     <script>
+        const IspName = _ISP_NAME_;
+        const CenterLat = _CENTER_LAT_;
+        const CenterLon = _CENTER_LON_;
+        const MapZoomDefault = _MAP_ZOOM_;
+        const map_center = {lat: CenterLat, lng: CenterLon};
+
         function initMap() {
-            var columbia = {lat: 38.947775, lng: -92.323385};
             map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 9,
-                center: columbia
+                zoom: MapZoomDefault,
+                center: map_center
             });
             map.setTilt(0);
         }
