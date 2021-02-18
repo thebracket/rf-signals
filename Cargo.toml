@@ -13,4 +13,7 @@ license = "GPL2"
 rf-signal-algorithms = { path = "rf-signal-algorithms/" }
 
 [workspace]
-members = [ "rf-signal-algorithms" ]
+members = [ 
+    "rf-signal-algorithms",
+    "bracket-heat",
+]
