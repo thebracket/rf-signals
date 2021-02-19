@@ -1,7 +1,7 @@
 pub mod latlon;
 pub mod srtm;
 pub use latlon::LatLon;
-use lidar::{cache, lidar_elevation};
+use lidar::lidar_elevation;
 use rayon::prelude::*;
 use srtm::get_altitude;
 use lazy_static::*;
