@@ -10,6 +10,13 @@ Wisp(
             lon: -92.3233740822584,
             height_meters: 55,
             max_range_km: 16.0934
+        ),
+        Tower(
+            name: "Biggs",
+            lat: 38.798403,
+            lon: -92.289524,
+            height_meters: 60,
+            max_range_km: 16.0934
         )
     ]
 )
