@@ -27,7 +27,12 @@ impl LidarIndexEntry {
         let base_idx = (row_idx * self.header.size) + col_idx;
 
         let memsize = self.memory.len();
-        bytemuck::cast_slice(&self.memory[SIZE_OF_HEADER..memsize])[base_idx]
+        let slice = bytemuck::cast_slice(&self.memory[SIZE_OF_HEADER..memsize]);
+        if base_idx < self.header.size * (self.header.size + 1) {
+            slice[base_idx]
+        } else {
+            0
+        }
     }
 }
 
