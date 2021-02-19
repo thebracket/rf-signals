@@ -32,7 +32,7 @@ pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f
                 let los_path = lat_lon_vec_to_heights(&path, "z:/lidarserver/terrain");
                 has_line_of_sight(
                     &los_path,
-                    Distance::with_meters(2.0),
+                    Distance::with_meters(cpe_height),
                     Distance::with_meters(t.height_meters + base_tower_height),
                 )
             })

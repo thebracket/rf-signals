@@ -17,7 +17,7 @@
             left: 300px;
             top: 10px;
             width: 355px;
-            height: 20px;
+            height: 40px;
             background-color: #eee;
             border: 1px solid black;
             border-radius: 4px;
@@ -36,6 +36,9 @@
         <button id="btnNone">None</button>
         <button id="btnHeight">Height</button>
         <button id="btnLoS">L-o-S</button>
+        <br />
+        <span style="font-weight: bold; font-size: 8pt;">CPE Height (m):</span> <input type="range" min="1" max="20" value="2" class="slider" id="cpeHeight" />
+        <span id="cpeHeightDisplay">2</span>
     </div>
 
     <script>
@@ -57,6 +60,13 @@
             $("#netName").text(IspName);
             loadTowers();
             bindHeight();
+            $("#cpeHeight").change(function() {
+                let h = $("#cpeHeight").val();
+                $("#cpeHeightDisplay").text(h);
+            });
+            map.addListener("click", (mapsMouseEvent) => {
+                console.log(mapsMouseEvent.latLng);
+            });
         }
 
         function loadTowers() {
@@ -169,7 +179,8 @@
                 this.bounds = bounds;
                 let sw = bounds.getSouthWest();
                 let ne = bounds.getNorthEast();
-                let url = "losmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/2.0";
+                let h = $("#cpeHeight").val();
+                let url = "losmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/" + h;
                 // TODO: 2.0 needs to replaced with a height slider
                 this.image = url;
             }
