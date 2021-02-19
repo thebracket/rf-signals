@@ -13,7 +13,14 @@ use rf_signal_algorithms::{
 };
 use rocket::http::ext;
 
-pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -> Vec<u8> {
+pub fn losmap_tile(
+    swlat: f64,
+    swlon: f64,
+    nelat: f64,
+    nelon: f64,
+    cpe_height: f64,
+    srtm_path: &str,
+) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
     let wisp_reader = WISP.read();
 
@@ -24,12 +31,11 @@ pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f
             .iter()
             .filter(|t| haversine_distance(p, &LatLon::new(t.lat, t.lon)).as_km() < t.max_range_km)
             .map(|t| {
-                let base_tower_height =
-                    get_altitude(&LatLon::new(t.lat, t.lon), "z:/lidarserver/terrain")
+                let base_tower_height = get_altitude(&LatLon::new(t.lat, t.lon), srtm_path)
                     .unwrap_or(Distance::with_meters(0.0))
                     .as_meters();
                 let path = lat_lon_path_10m(p, &LatLon::new(t.lat, t.lon));
-                let los_path = lat_lon_vec_to_heights(&path, "z:/lidarserver/terrain");
+                let los_path = lat_lon_vec_to_heights(&path, srtm_path);
                 has_line_of_sight(
                     &los_path,
                     Distance::with_meters(cpe_height),

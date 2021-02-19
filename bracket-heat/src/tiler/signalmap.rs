@@ -4,10 +4,26 @@ use std::io::Read;
 use std::io::{Cursor, Seek, SeekFrom};
 
 use crate::WISP;
-use rf_signal_algorithms::{Distance, Frequency, LatLon, free_space_path_loss_db, geometry::{haversine_distance, haversine_intermediate}, has_line_of_sight, lat_lon_path_10m, lat_lon_tile, lat_lon_vec_to_heights, lidar::lidar_elevation, srtm::get_altitude, PTPPath, PTPClimate, itwom_point_to_point};
+use rf_signal_algorithms::{
+    free_space_path_loss_db,
+    geometry::{haversine_distance, haversine_intermediate},
+    has_line_of_sight, itwom_point_to_point, lat_lon_path_10m, lat_lon_tile,
+    lat_lon_vec_to_heights,
+    lidar::lidar_elevation,
+    srtm::get_altitude,
+    Distance, Frequency, LatLon, PTPClimate, PTPPath,
+};
 use rocket::http::ext;
 
-pub fn signalmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64, frequency: f64) -> Vec<u8> {
+pub fn signalmap_tile(
+    swlat: f64,
+    swlon: f64,
+    nelat: f64,
+    nelon: f64,
+    cpe_height: f64,
+    frequency: f64,
+    srtm_path: &str,
+) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
     let wisp_reader = WISP.read();
 
@@ -18,12 +34,11 @@ pub fn signalmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height
             .iter()
             .filter(|t| haversine_distance(p, &LatLon::new(t.lat, t.lon)).as_km() < t.max_range_km)
             .map(|t| {
-                let base_tower_height =
-                    get_altitude(&LatLon::new(t.lat, t.lon), "z:/lidarserver/terrain")
+                let base_tower_height = get_altitude(&LatLon::new(t.lat, t.lon), srtm_path)
                     .unwrap_or(Distance::with_meters(0.0))
                     .as_meters();
                 let path = lat_lon_path_10m(p, &LatLon::new(t.lat, t.lon));
-                let los_path = lat_lon_vec_to_heights(&path, "z:/lidarserver/terrain");
+                let los_path = lat_lon_vec_to_heights(&path, srtm_path);
                 let los = has_line_of_sight(
                     &los_path,
                     Distance::with_meters(cpe_height),
@@ -33,12 +48,10 @@ pub fn signalmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height
                 if los || d.as_meters() < 1000.0 {
                     free_space_path_loss_db(Frequency::with_ghz(frequency), d)
                 } else {
-                    let mut path_as_distances : Vec<f64> = los_path
-                        .iter()
-                        .map(|d| *d as f64)
-                        .collect();
+                    let mut path_as_distances: Vec<f64> =
+                        los_path.iter().map(|d| *d as f64).collect();
                     let path_len = path_as_distances.len();
-                    path_as_distances[path_len -1] = base_tower_height;
+                    path_as_distances[path_len - 1] = base_tower_height;
                     let mut terrain_path = PTPPath::new(
                         path_as_distances,
                         Distance::with_meters(t.height_meters),
@@ -59,12 +72,12 @@ pub fn signalmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height
                     lr.dbloss
                 }
             })
-            .min_by(|a,b| a.partial_cmp(b).unwrap())
+            .min_by(|a, b| a.partial_cmp(b).unwrap())
             .unwrap_or(400.0);
 
         let temporary_link_budget = 49.0 + 20.0 - dbloss;
         if temporary_link_budget > -90.0 {
-                //println!("Link budget: {}", temporary_link_budget);
+            //println!("Link budget: {}", temporary_link_budget);
             let color = ramp(&temporary_link_budget);
             let base = ((((TILE_SIZE - 1) - *y) as usize * 4 * TILE_SIZE as usize)
                 + ((*x) as usize * 4)) as usize;

@@ -41,7 +41,8 @@ fn towers() -> Json<Vec<Tower>> {
 
 #[get("/heightmap/<swlat>/<swlon>/<nelat>/<nelon>")]
 fn heightmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
-    let image_buffer = tiler::heightmap_tile(swlat, swlon, nelat, nelon);
+    let srtm_path = WISP.read().srtm_path.clone();
+    let image_buffer = tiler::heightmap_tile(swlat, swlon, nelat, nelon, &srtm_path);
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
     response_build.status(Status::Ok);
@@ -51,7 +52,8 @@ fn heightmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a>
 
 #[get("/losmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>")]
 fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -> Response<'a> {
-    let image_buffer = tiler::losmap_tile(swlat, swlon, nelat, nelon, cpe_height);
+    let srtm_path = WISP.read().srtm_path.clone();
+    let image_buffer = tiler::losmap_tile(swlat, swlon, nelat, nelon, cpe_height, &srtm_path);
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
     response_build.status(Status::Ok);
@@ -60,8 +62,17 @@ fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -
 }
 
 #[get("/signalmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>/<frequency>")]
-fn signalmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64, frequency: f64) -> Response<'a> {
-    let image_buffer = tiler::signalmap_tile(swlat, swlon, nelat, nelon, cpe_height, frequency);
+fn signalmap<'a>(
+    swlat: f64,
+    swlon: f64,
+    nelat: f64,
+    nelon: f64,
+    cpe_height: f64,
+    frequency: f64,
+) -> Response<'a> {
+    let srtm_path = WISP.read().srtm_path.clone();
+    let image_buffer =
+        tiler::signalmap_tile(swlat, swlon, nelat, nelon, cpe_height, frequency, &srtm_path);
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
     response_build.status(Status::Ok);
@@ -81,12 +92,15 @@ fn main() {
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
         .replace("_ISP_NAME_", &format!("\"{}\"", &wisp_def.name));
 
+    println!("Indexing LiDAR Data - Please Wait");
+    rf_signal_algorithms::lidar::index_all_lidar(&wisp_def.lidar_path);
+
     *WISP.write() = wisp_def;
 
-    println!("Indexing LiDAR Data - Please Wait");
-    rf_signal_algorithms::lidar::index_all_lidar("z:/lidarserver/terrain/lidar");
-
     rocket::ignite()
-        .mount("/", routes![index, tower_marker, towers, heightmap, losmap, signalmap])
+        .mount(
+            "/",
+            routes![index, tower_marker, towers, heightmap, losmap, signalmap],
+        )
         .launch();
 }

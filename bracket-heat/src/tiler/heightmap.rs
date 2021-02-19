@@ -8,11 +8,11 @@ use rf_signal_algorithms::{
     LatLon,
 };
 
-pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8> {
+pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, srtm_path: &str) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
 
     let points = lat_lon_tile(swlat, swlon, nelat, nelon, TILE_SIZE as usize);
-    let heights = height_tile_elevations(&points, "z:/lidarserver/terrain");
+    let heights = height_tile_elevations(&points, srtm_path);
 
     let min_height = heights.iter().filter(|a| **a > 0).min().unwrap();
     let max_height = heights.iter().max().unwrap();
