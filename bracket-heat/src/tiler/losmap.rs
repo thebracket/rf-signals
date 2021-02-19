@@ -6,7 +6,7 @@ use rf_signal_algorithms::{Distance, LatLon, geometry::{haversine_distance, have
 use rocket::http::ext;
 use crate::WISP;
 
-pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8> {
+pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
     let wisp_reader = WISP.read();
 
@@ -45,7 +45,7 @@ pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8> {
         .for_each(|(x, y, loc, visible_towers)| {
             for (i, d) in visible_towers.iter() {
                 let tower_loc = LatLon::new(wisp_reader.towers[*i].lat, wisp_reader.towers[*i].lon );
-                let extent_step = 10.0 / d.as_meters();
+                let extent_step = f64::min(10.0 / d.as_meters(), 10.0);
                 let mut extent = 0.0;
                 let mut path = Vec::with_capacity((d.as_meters() / 10.0) as usize);
                 while extent <= 1.0 {
@@ -65,7 +65,7 @@ pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8> {
                     .collect();
 
                 if !los_path.is_empty() {
-                    let start_height = los_path[0] + 2.0; // TODO: Replace the starting height with something defined
+                    let start_height = los_path[0] + cpe_height; // TODO: Replace the starting height with something defined
                     let end_height = los_path[los_path.len()-1] + wisp_reader.towers[*i].height_meters;
                     let height_step = (end_height - start_height) / los_path.len() as f64;
                     let mut current_height = start_height;
@@ -73,7 +73,8 @@ pub fn losmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Vec<u8> {
                     for p in los_path.iter() {
                         if current_height < *p {
                             visible = false;
-                        } 
+                            break;
+                        }
                         current_height += height_step;
                     }
 

@@ -49,9 +49,9 @@ fn heightmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a>
     response_build.finalize()
 }
 
-#[get("/losmap/<swlat>/<swlon>/<nelat>/<nelon>")]
-fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
-    let image_buffer = tiler::losmap_tile(swlat, swlon, nelat, nelon);
+#[get("/losmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>")]
+fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -> Response<'a> {
+    let image_buffer = tiler::losmap_tile(swlat, swlon, nelat, nelon, cpe_height);
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
     response_build.status(Status::Ok);

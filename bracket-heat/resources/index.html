@@ -169,7 +169,8 @@
                 this.bounds = bounds;
                 let sw = bounds.getSouthWest();
                 let ne = bounds.getNorthEast();
-                let url = "losmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng();
+                let url = "losmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/2.0";
+                // TODO: 2.0 needs to replaced with a height slider
                 this.image = url;
             }
         }
