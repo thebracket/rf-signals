@@ -59,6 +59,16 @@ fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -
     response_build.finalize()
 }
 
+#[get("/signalmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>/<frequency>")]
+fn signalmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64, frequency: f64) -> Response<'a> {
+    let image_buffer = tiler::signalmap_tile(swlat, swlon, nelat, nelon, cpe_height, frequency);
+    let mut response_build = Response::build();
+    response_build.header(ContentType::PNG);
+    response_build.status(Status::Ok);
+    response_build.streamed_body(std::io::Cursor::new(image_buffer));
+    response_build.finalize()
+}
+
 fn main() {
     let wisp_def = load_wisp();
 
@@ -77,6 +87,6 @@ fn main() {
     rf_signal_algorithms::lidar::index_all_lidar("z:/lidarserver/terrain/lidar");
 
     rocket::ignite()
-        .mount("/", routes![index, tower_marker, towers, heightmap, losmap])
+        .mount("/", routes![index, tower_marker, towers, heightmap, losmap, signalmap])
         .launch();
 }

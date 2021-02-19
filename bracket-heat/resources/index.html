@@ -36,9 +36,16 @@
         <button id="btnNone">None</button>
         <button id="btnHeight">Height</button>
         <button id="btnLoS">L-o-S</button>
+        <button id="btnSignal">Signal</button>
         <br />
         <span style="font-weight: bold; font-size: 8pt;">CPE Height (m):</span> <input type="range" min="1" max="20" value="2" class="slider" id="cpeHeight" />
         <span id="cpeHeightDisplay">2</span>
+        <select id="freq">
+            <option value="60">60 Ghz</option>
+            <option value="5.8">5.8 Ghz</option>
+            <option value="3.6" selected="true">3.6 Ghz</option>
+            <option value="2.4">2.4 Ghz</option>
+        </select>
     </div>
 
     <script>
@@ -104,6 +111,12 @@
                 removeCurrentOverlay();
                 let bounds = map.getBounds();
                 currentOverlay = new LosOverlay(bounds);
+                currentOverlay.setMap(map);
+            });
+            $("#btnSignal").click(function() {
+                removeCurrentOverlay();
+                let bounds = map.getBounds();
+                currentOverlay = new SignalOverlay(bounds);
                 currentOverlay.setMap(map);
             });
         }
@@ -181,7 +194,19 @@
                 let ne = bounds.getNorthEast();
                 let h = $("#cpeHeight").val();
                 let url = "losmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/" + h;
-                // TODO: 2.0 needs to replaced with a height slider
+                this.image = url;
+            }
+        }
+
+        class SignalOverlay extends DynamicImageOverlay {
+            constructor(bounds) {
+                super();
+                this.bounds = bounds;
+                let sw = bounds.getSouthWest();
+                let ne = bounds.getNorthEast();
+                let h = $("#cpeHeight").val();
+                let frequency = $("#freq").children("option:selected").val();
+                let url = "signalmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/" + h + "/" + frequency;
                 this.image = url;
             }
         }
