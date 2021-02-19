@@ -5,6 +5,7 @@ use super::{LidarIndex, LidarHeader, LidarFile};
 use parking_lot::Mutex;
 use std::path::Path;
 use rayon::prelude::*;
+use memmap::Mmap;
 
 lazy_static! {
     static ref LIDAR_CACHE: Mutex<LidarIndex> = Mutex::new(LidarIndex::new());
@@ -29,21 +30,24 @@ pub fn index_all_lidar(directory: &str) {
             .collect::<Vec<String>>();
         println!("Found {} LIDAR files to index. Search took {:?}", entries.len(), now.elapsed());
 
-        let headers : Vec<(&String, LidarHeader)> = entries
+        let mut headers : Vec<(&String, LidarHeader, Mmap)> = entries
             .par_iter()
             .map(|filename| {
+                let (hdr, memory) = LidarFile::header_and_mmap(Path::new(filename));
                 (
                     filename,
-                    LidarFile::just_header(Path::new(filename))
+                    hdr,
+                    memory
                 )
             })
             .collect();
         println!("Mapped headers, {:?}", now.elapsed());
 
         let mut index_file = LidarIndex::new();
-        headers
-            .iter()
-            .for_each(|(filename, header)| index_file.add_index_entry(filename, header));
+        while !headers.is_empty() {
+            let (filename, header, memory) = headers.pop().unwrap();
+            index_file.add_index_entry(filename, header, memory);
+        }
         println!("Parsed headers, {:?}", now.elapsed());
             index_file.bake_quadtree();
         println!("Generated index in {:?}", now.elapsed());
@@ -52,20 +56,13 @@ pub fn index_all_lidar(directory: &str) {
 }
 
 pub fn lidar_elevation(pt: &LatLon) -> f64 {
-    use super::LidarCheckerResult;
     let lidar_lock = LIDAR_CACHE.lock();
     let availability = lidar_lock.is_available(&pt.lat(), &pt.lon());
     match availability {
-        LidarCheckerResult::Unavailable => 0.0,
-        LidarCheckerResult::Ready => {
+        false => 0.0,
+        true => {
             // It's ready - can get it with the read lock
             lidar_lock.get_height_for_location(&pt.lat(), &pt.lon()) as f64
-        }
-        LidarCheckerResult::NotLoaded => {
-            // Have to upgrade to a write lock to get it
-            std::mem::drop(lidar_lock);
-            let mut lidar_lock = LIDAR_CACHE.lock();
-            lidar_lock.get_height_for_location_and_load(&pt.lat(), &pt.lon()) as f64
         }
     }
 }

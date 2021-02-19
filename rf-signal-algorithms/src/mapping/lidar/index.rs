@@ -1,4 +1,5 @@
 use super::{LidarFile, LidarHeader};
+use memmap::Mmap;
 use quadtree_f32::*;
 use std::path::Path;
 
@@ -11,34 +12,25 @@ pub struct LidarIndex {
 pub struct LidarIndexEntry {
     pub filename: String,
     pub header: LidarHeader,
-    pub data: Option<LidarFile>,
+    pub memory: Mmap,
 }
 
 impl LidarIndexEntry {
-    pub fn elevation(&mut self, lat: &f64, lon: &f64) -> u16 {
-        if let Some(data) = &self.data {
-            data.elevation(lat, lon)
-        } else {
-            println!("Loading {}", self.filename);
-            self.data = Some(LidarFile::from_file(Path::new(&self.filename)));
-            return self.data.as_ref().unwrap().elevation(lat, lon);
-        }
-    }
+    pub fn elevation(&self, point_lat: &f64, point_lon: &f64) -> u16 {
+        const SIZE_OF_HEADER: usize = std::mem::size_of::<LidarHeader>();
 
-    pub fn elevation_unchecked(&self, lat: &f64, lon: &f64) -> u16 {
-        if let Some(data) = &self.data {
-            data.elevation(lat, lon)
-        } else {
-            0
-        }
-    }
-}
+        let lat_span = self.header.max_lat - self.header.min_lat;
+        let lon_span = self.header.max_lon - self.header.min_lon;
+        let lat = (point_lat - self.header.min_lat) / lat_span;
+        let lon = (point_lon - self.header.min_lon) / lon_span;
+        let row_idx = (lon * self.header.size as f64) as usize;
+        let col_idx = (lat * self.header.size as f64) as usize;
 
-#[derive(PartialEq)]
-pub enum LidarCheckerResult {
-    Unavailable,
-    NotLoaded,
-    Ready,
+        let base_idx = (row_idx * self.header.size) + col_idx;
+
+        let memsize = self.memory.len();
+        bytemuck::cast_slice(&self.memory[SIZE_OF_HEADER..memsize])[base_idx]
+    }
 }
 
 impl LidarIndex {
@@ -49,11 +41,11 @@ impl LidarIndex {
         }
     }
 
-    pub fn add_index_entry(&mut self, filename: &str, header: &LidarHeader) {
+    pub fn add_index_entry(&mut self, filename: &str, header: LidarHeader, memory: Mmap) {
         self.headers.push(LidarIndexEntry {
             filename: filename.to_string(),
-            header: *header,
-            data: None,
+            header,
+            memory
         });
     }
 
@@ -77,7 +69,7 @@ impl LidarIndex {
         self.quadtree = Some(QuadTree::new(items.into_iter()));
     }
 
-    pub fn is_available(&self, lat: &f64, lon: &f64) -> LidarCheckerResult {
+    pub fn is_available(&self, lat: &f64, lon: &f64) -> bool {
         let target = Rect {
             min_y: *lon as f32,
             max_y: *lon as f32,
@@ -92,49 +84,13 @@ impl LidarIndex {
 
         // Quick return if there's no data
         if id_match.is_empty() {
-            return LidarCheckerResult::Unavailable;
-        }
-
-        let mut good = true;
-        id_match.iter().for_each(|id| {
-            if self.headers[id.0].data.is_none() {
-                good = false;
-            }
-        });
-
-        if good {
-            LidarCheckerResult::Ready
+            false
         } else {
-            LidarCheckerResult::NotLoaded
+            true
         }
     }
 
     pub fn get_height_for_location(&self, lat: &f64, lon: &f64) -> u16 {
-        let target = Rect {
-            min_y: *lon as f32,
-            max_y: *lon as f32,
-            min_x: *lat as f32,
-            max_x: *lat as f32,
-        };
-        let id_match = self
-            .quadtree
-            .as_ref()
-            .unwrap()
-            .get_ids_that_overlap(&target);
-
-        // Quick return if there's no data
-        if id_match.is_empty() {
-            return 0;
-        }
-
-        id_match
-            .iter()
-            .map(|id| self.headers[id.0].elevation_unchecked(lat, lon))
-            .max()
-            .unwrap_or(0)
-    }
-
-    pub fn get_height_for_location_and_load(&mut self, lat: &f64, lon: &f64) -> u16 {
         let target = Rect {
             min_y: *lon as f32,
             max_y: *lon as f32,

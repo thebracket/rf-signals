@@ -1,7 +1,7 @@
 use std::io::prelude::*;
 use std::path::Path;
 use std::{fs::File, mem::size_of, io::BufReader};
-use memmap::MmapOptions;
+use memmap::{MmapOptions, Mmap};
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -33,11 +33,19 @@ impl LidarFile {
 
     pub fn just_header(path: &Path) -> LidarHeader {
         const SIZE_OF_HEADER: usize = size_of::<LidarHeader>();
-        //println!("Reading {} bytes from {:?}", SIZE_OF_HEADER, path);
-
         let f = File::open(path).unwrap();
         let mapped_file = unsafe { MmapOptions::new().map(&f).unwrap() };
         bytemuck::from_bytes::<LidarHeader>(&mapped_file[0..SIZE_OF_HEADER]).clone()
+    }
+
+    pub fn header_and_mmap(path: &Path) -> (LidarHeader, Mmap) {
+        const SIZE_OF_HEADER: usize = size_of::<LidarHeader>();
+        let f = File::open(path).unwrap();
+        let mapped_file = unsafe { MmapOptions::new().map(&f).unwrap() };
+        (
+            bytemuck::from_bytes::<LidarHeader>(&mapped_file[0..SIZE_OF_HEADER]).clone(),
+            mapped_file
+        )
     }
 
     pub fn from_file(path: &Path) -> Self {
