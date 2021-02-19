@@ -1,7 +1,8 @@
+pub(crate) const TILE_SIZE: u32 = 64;
+
 use std::io::Read;
 use std::io::{Cursor, Seek, SeekFrom};
 
-use super::TILE_SIZE;
 use crate::WISP;
 use rf_signal_algorithms::{
     geometry::{haversine_distance, haversine_intermediate},

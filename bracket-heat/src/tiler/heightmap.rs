@@ -1,7 +1,8 @@
+pub(crate) const TILE_SIZE: u32 = 256;
+
 use std::io::Read;
 use std::io::{Cursor, Seek, SeekFrom};
 
-use super::TILE_SIZE;
 use rf_signal_algorithms::{
     height_tile_elevations, lat_lon_tile, lidar::lidar_elevation, srtm::get_altitude, Distance,
     LatLon,
