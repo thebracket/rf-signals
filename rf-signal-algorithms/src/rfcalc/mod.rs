@@ -20,9 +20,8 @@ pub use pel::plane_earth_path_loss;
 mod soil;
 pub use soil::soil_path_loss;
 mod sui;
+use super::{Distance, Frequency};
 pub use sui::sui_path_loss;
-use super::{Frequency, Distance};
-
 
 /// Defines the calculation more for SUI, HATA, etc. path loss
 #[derive(Debug, PartialEq)]

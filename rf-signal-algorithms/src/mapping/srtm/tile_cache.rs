@@ -1,14 +1,14 @@
 use super::SrtmTile;
+use crate::Distance;
 use crate::LatLon;
 use lazy_static::*;
-use memmap::{ Mmap, MmapOptions };
+use memmap::{Mmap, MmapOptions};
 use parking_lot::RwLock;
-use std::fs::File;
-use crate::Distance;
 use std::collections::HashMap;
+use std::fs::File;
 
 lazy_static! {
-    static ref TILE_CACHE : RwLock<HashMap<SrtmTile, Mmap>> = RwLock::new(HashMap::new());
+    static ref TILE_CACHE: RwLock<HashMap<SrtmTile, Mmap>> = RwLock::new(HashMap::new());
 }
 
 pub fn get_altitude(loc: &LatLon, terrain_path: &str) -> Option<Distance> {
@@ -63,20 +63,18 @@ fn get_elevation(loc: &LatLon, tile: &SrtmTile, memory: &Mmap) -> Distance {
             const BYTES_PER_SAMPLE: usize = 2;
             const N_SAMPLES: usize = 1201;
             const SAMPLES_PER_DEGREE: usize = N_SAMPLES - 1;
-            let row = ((floor.lat() + 1.0 - loc.lat()) * SAMPLES_PER_DEGREE as f64).round()
-                as usize;
-            let col =
-                ((loc.lon() - floor.lon()) * SAMPLES_PER_DEGREE as f64).round() as usize;
+            let row =
+                ((floor.lat() + 1.0 - loc.lat()) * SAMPLES_PER_DEGREE as f64).round() as usize;
+            let col = ((loc.lon() - floor.lon()) * SAMPLES_PER_DEGREE as f64).round() as usize;
             BYTES_PER_SAMPLE * ((row * N_SAMPLES) + col)
         }
         SrtmTile::Srtm3 { .. } => {
             const BYTES_PER_SAMPLE: usize = 2;
             const N_SAMPLES: usize = 3601;
             const SAMPLES_PER_DEGREE: usize = N_SAMPLES - 1;
-            let row = ((floor.lat() + 1.0 - loc.lat()) * SAMPLES_PER_DEGREE as f64).round()
-                as usize;
-            let col =
-                ((loc.lon() - floor.lon()) * SAMPLES_PER_DEGREE as f64).round() as usize;
+            let row =
+                ((floor.lat() + 1.0 - loc.lat()) * SAMPLES_PER_DEGREE as f64).round() as usize;
+            let col = ((loc.lon() - floor.lon()) * SAMPLES_PER_DEGREE as f64).round() as usize;
             BYTES_PER_SAMPLE * ((row * N_SAMPLES) + col)
         }
         SrtmTile::SrtmThird {

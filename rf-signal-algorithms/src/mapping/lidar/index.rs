@@ -40,10 +40,7 @@ impl LidarIndex {
     }
 
     pub fn add_index_entry(&mut self, header: LidarHeader, memory: Mmap) {
-        self.headers.push(LidarIndexEntry {
-            header,
-            memory
-        });
+        self.headers.push(LidarIndexEntry { header, memory });
     }
 
     pub fn bake_quadtree(&mut self) {

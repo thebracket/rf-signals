@@ -1,7 +1,7 @@
+use memmap::{Mmap, MmapOptions};
 use std::io::prelude::*;
 use std::path::Path;
-use std::{fs::File, mem::size_of, io::BufReader};
-use memmap::{MmapOptions, Mmap};
+use std::{fs::File, io::BufReader, mem::size_of};
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -44,7 +44,7 @@ impl LidarFile {
         let mapped_file = unsafe { MmapOptions::new().map(&f).unwrap() };
         (
             bytemuck::from_bytes::<LidarHeader>(&mapped_file[0..SIZE_OF_HEADER]).clone(),
-            mapped_file
+            mapped_file,
         )
     }
 

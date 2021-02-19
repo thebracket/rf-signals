@@ -1,5 +1,5 @@
-use geo::Point;
 use super::srtm::SrtmTile;
+use geo::Point;
 
 // Represents a point on the globe
 #[derive(Debug, Copy, Clone, PartialEq)]
