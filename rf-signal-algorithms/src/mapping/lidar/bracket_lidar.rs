@@ -1,6 +1,7 @@
 use std::io::prelude::*;
 use std::path::Path;
-use std::{fs::File, mem::size_of};
+use std::{fs::File, mem::size_of, io::BufReader};
+use memmap::MmapOptions;
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -32,17 +33,16 @@ impl LidarFile {
 
     pub fn just_header(path: &Path) -> LidarHeader {
         const SIZE_OF_HEADER: usize = size_of::<LidarHeader>();
-        let mut file = File::open(path).expect("Cannot open file");
-        let mut hdr = [0u8; SIZE_OF_HEADER];
-        let bytes_read = file.read(&mut hdr).unwrap();
-        assert_eq!(bytes_read, SIZE_OF_HEADER);
+        //println!("Reading {} bytes from {:?}", SIZE_OF_HEADER, path);
 
-        bytemuck::from_bytes::<LidarHeader>(&hdr).clone()
+        let f = File::open(path).unwrap();
+        let mapped_file = unsafe { MmapOptions::new().map(&f).unwrap() };
+        bytemuck::from_bytes::<LidarHeader>(&mapped_file[0..SIZE_OF_HEADER]).clone()
     }
 
     pub fn from_file(path: &Path) -> Self {
         const SIZE_OF_HEADER: usize = size_of::<LidarHeader>();
-        let mut file = File::open(path).expect("Cannot open file");
+        let mut file = BufReader::new(File::open(path).expect("Cannot open file"));
         let mut hdr = [0u8; SIZE_OF_HEADER];
         let bytes_read = file.read(&mut hdr).unwrap();
         assert_eq!(bytes_read, SIZE_OF_HEADER);

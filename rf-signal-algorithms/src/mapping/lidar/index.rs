@@ -49,11 +49,10 @@ impl LidarIndex {
         }
     }
 
-    pub fn add_index_entry(&mut self, filename: &str) {
-        let header = LidarFile::just_header(Path::new(filename));
+    pub fn add_index_entry(&mut self, filename: &str, header: &LidarHeader) {
         self.headers.push(LidarIndexEntry {
             filename: filename.to_string(),
-            header,
+            header: *header,
             data: None,
         });
     }
