@@ -1,9 +1,12 @@
 pub mod latlon;
 pub mod srtm;
 pub use latlon::LatLon;
-use lidar::lidar_elevation;
+use lidar::{cache, lidar_elevation};
 use rayon::prelude::*;
 use srtm::get_altitude;
+use lazy_static::*;
+use parking_lot::Mutex;
+use lru::LruCache;
 
 use crate::{Distance, geometry::{haversine_distance, haversine_intermediate}};
 pub mod lidar;
@@ -36,16 +39,33 @@ pub fn lat_lon_tile(
     points
 }
 
+lazy_static! {
+    static ref POINT_CACHE: Mutex<LruCache<(i32, i32), u16>> = Mutex::new(LruCache::new(1_000_000));
+}
+
+fn highest_altitude(point: &LatLon, srtm_path: &str) -> u16 {
+    let cache_index = point.to_cache_tuple();
+
+    let mut cache_lock = POINT_CACHE.lock();
+    let cache_point = cache_lock.get(&cache_index);
+    if let Some(cp) = cache_point {
+        return *cp;
+    }
+    let h = u16::max(
+        get_altitude(point, &srtm_path)
+            .unwrap_or(Distance::with_meters(0))
+            .as_meters() as u16,
+        lidar_elevation(point) as u16,
+    );
+    cache_lock.put(cache_index, h);
+    h
+}
+
 pub fn height_tile_elevations(points: &[(u32, u32, LatLon)], srtm_path: &str) -> Vec<u16> {
     points
         .par_iter()
         .map(|(_, _, point)| {
-            u16::max(
-                get_altitude(point, &srtm_path)
-                    .unwrap_or(Distance::with_meters(0))
-                    .as_meters() as u16,
-                lidar_elevation(point) as u16,
-            )
+            highest_altitude(point, srtm_path)
         })
         .collect()
 }
@@ -67,12 +87,7 @@ pub fn lat_lon_vec_to_heights(points: &[LatLon], srtm_path: &str) -> Vec<u16> {
     points
         .par_iter()
         .map(|point| {
-            u16::max(
-                get_altitude(point, &srtm_path)
-                    .unwrap_or(Distance::with_meters(0))
-                    .as_meters() as u16,
-                lidar_elevation(point) as u16,
-            )
+            highest_altitude(point, srtm_path)
         })
         .collect()
 }

@@ -25,6 +25,7 @@ memmap = { version = "0.7.0", optional = false }
 bytemuck = "1.4.1"
 quadtree-f32 = "0.3.0"
 rayon = "1.5.0"
+lru = "0.6.5"
 
 [dev-dependencies]
 float-cmp = "0.8"

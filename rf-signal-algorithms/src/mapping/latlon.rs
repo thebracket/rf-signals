@@ -84,6 +84,13 @@ impl LatLon {
             lon_tile: lon_sub_tile as u8,
         }
     }
+
+    pub fn to_cache_tuple(&self) -> (i32, i32) {
+        (
+            (self.lat() * 100_000.0) as i32,
+            (self.lon() * 100_000.0) as i32,
+        )
+    }
 }
 
 #[cfg(test)]
