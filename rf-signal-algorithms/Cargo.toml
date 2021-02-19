@@ -19,7 +19,6 @@ publish = false
 [dependencies]
 num-complex = "0.3.1"
 geo = { version =  "0.17.0", optional = false }
-lru = { version = "0.6.5", optional = false }
 lazy_static = { version = "1.4.0", optional = false }
 parking_lot = { version = "0.11.0", optional = false }
 memmap = { version = "0.7.0", optional = false }

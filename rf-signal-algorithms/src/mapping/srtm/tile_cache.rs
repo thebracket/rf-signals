@@ -1,14 +1,14 @@
-use lru::LruCache;
 use super::SrtmTile;
 use crate::LatLon;
 use lazy_static::*;
 use memmap::{ Mmap, MmapOptions };
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use std::fs::File;
 use crate::Distance;
+use std::collections::HashMap;
 
 lazy_static! {
-    static ref TILE_CACHE : Mutex<LruCache<SrtmTile, Mmap>> = Mutex::new(LruCache::new(20));
+    static ref TILE_CACHE : RwLock<HashMap<SrtmTile, Mmap>> = RwLock::new(HashMap::new());
 }
 
 pub fn get_altitude(loc: &LatLon, terrain_path: &str) -> Option<Distance> {
@@ -20,11 +20,11 @@ pub fn get_altitude(loc: &LatLon, terrain_path: &str) -> Option<Distance> {
 
     // If we've got this far, it isn't cached. Try and load it.
     if let Some(tile) = SrtmTile::check_availability(loc, terrain_path) {
-        let mut cache_writer = TILE_CACHE.lock();
+        let mut cache_writer = TILE_CACHE.write();
         if let Ok(cache_file) = File::open(&tile.filename(terrain_path)) {
             let mapped_file = unsafe { MmapOptions::new().map(&cache_file).unwrap() };
             let elevation = get_elevation(loc, &tile, &mapped_file);
-            cache_writer.put(tile, mapped_file);
+            cache_writer.insert(tile, mapped_file);
             return Some(elevation);
         } else {
             return None;
@@ -36,7 +36,7 @@ pub fn get_altitude(loc: &LatLon, terrain_path: &str) -> Option<Distance> {
 }
 
 fn check_existing(loc: &LatLon) -> Option<Distance> {
-    let mut cache_reader = TILE_CACHE.lock();
+    let cache_reader = TILE_CACHE.read();
 
     let third = loc.to_srtm_third();
     if let Some(mm) = cache_reader.get(&third) {
