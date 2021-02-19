@@ -2,13 +2,13 @@ use lazy_static::*;
 use crate::LatLon;
 
 use super::{LidarIndex, LidarHeader, LidarFile};
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use std::path::Path;
 use rayon::prelude::*;
 use memmap::Mmap;
 
 lazy_static! {
-    static ref LIDAR_CACHE: Mutex<LidarIndex> = Mutex::new(LidarIndex::new());
+    static ref LIDAR_CACHE: RwLock<LidarIndex> = RwLock::new(LidarIndex::new());
 }
 
 pub fn index_all_lidar(directory: &str) {
@@ -30,12 +30,11 @@ pub fn index_all_lidar(directory: &str) {
             .collect::<Vec<String>>();
         println!("Found {} LIDAR files to index. Search took {:?}", entries.len(), now.elapsed());
 
-        let mut headers : Vec<(&String, LidarHeader, Mmap)> = entries
+        let mut headers : Vec<(LidarHeader, Mmap)> = entries
             .par_iter()
             .map(|filename| {
                 let (hdr, memory) = LidarFile::header_and_mmap(Path::new(filename));
                 (
-                    filename,
                     hdr,
                     memory
                 )
@@ -45,18 +44,18 @@ pub fn index_all_lidar(directory: &str) {
 
         let mut index_file = LidarIndex::new();
         while !headers.is_empty() {
-            let (filename, header, memory) = headers.pop().unwrap();
-            index_file.add_index_entry(filename, header, memory);
+            let (header, memory) = headers.pop().unwrap();
+            index_file.add_index_entry(header, memory);
         }
         println!("Parsed headers, {:?}", now.elapsed());
             index_file.bake_quadtree();
         println!("Generated index in {:?}", now.elapsed());
-        *LIDAR_CACHE.lock() = index_file;
+        *LIDAR_CACHE.write() = index_file;
     }
 }
 
 pub fn lidar_elevation(pt: &LatLon) -> f64 {
-    let lidar_lock = LIDAR_CACHE.lock();
+    let lidar_lock = LIDAR_CACHE.read();
     let availability = lidar_lock.is_available(&pt.lat(), &pt.lon());
     match availability {
         false => 0.0,

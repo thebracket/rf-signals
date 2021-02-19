@@ -1,7 +1,6 @@
-use super::{LidarFile, LidarHeader};
+use super::LidarHeader;
 use memmap::Mmap;
 use quadtree_f32::*;
-use std::path::Path;
 
 pub struct LidarIndex {
     pub headers: Vec<LidarIndexEntry>,
@@ -10,7 +9,6 @@ pub struct LidarIndex {
 
 #[derive(Debug)]
 pub struct LidarIndexEntry {
-    pub filename: String,
     pub header: LidarHeader,
     pub memory: Mmap,
 }
@@ -41,9 +39,8 @@ impl LidarIndex {
         }
     }
 
-    pub fn add_index_entry(&mut self, filename: &str, header: LidarHeader, memory: Mmap) {
+    pub fn add_index_entry(&mut self, header: LidarHeader, memory: Mmap) {
         self.headers.push(LidarIndexEntry {
-            filename: filename.to_string(),
             header,
             memory
         });
