@@ -5,6 +5,7 @@ use std::fs::File;
 
 #[derive(Clone, Serialize, Deserialize, Default)]
 pub struct Wisp {
+    pub listen_port: u16,
     pub name: String,
     pub center: (f64, f64),
     pub map_zoom: u32,

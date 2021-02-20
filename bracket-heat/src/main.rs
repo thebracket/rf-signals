@@ -12,7 +12,7 @@ mod tiler;
 const GOOGLE_MAPS_API_KEY: &str = include_str!("../resources/gmap_key.txt");
 const INDEX_HTML: &str = include_str!("../resources/index.html");
 use rf_signal_algorithms::{Frequency, LatLon};
-use rocket::Response;
+use rocket::{Response, config::Environment, Config};
 use rocket::{http::ContentType, http::Status, response::content};
 use rocket_contrib::json::Json;
 
@@ -121,9 +121,14 @@ fn main() {
     println!("Indexing LiDAR Data - Please Wait");
     rf_signal_algorithms::lidar::index_all_lidar(&wisp_def.lidar_path);
 
+
+    let config = Config::build(Environment::Production)
+        .port(wisp_def.listen_port)
+        .finalize().unwrap();
+
     *WISP.write() = wisp_def;
 
-    rocket::ignite()
+    rocket::custom(config)
         .mount(
             "/",
             routes![
