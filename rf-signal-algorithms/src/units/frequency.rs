@@ -1,5 +1,5 @@
 /// Type to represent a radio frequency in Hz
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct Frequency(pub f64);
 
 impl Frequency {

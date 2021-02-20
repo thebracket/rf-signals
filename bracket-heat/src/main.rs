@@ -5,11 +5,13 @@ use lazy_static::*;
 use parking_lot::RwLock;
 mod data_defs;
 use data_defs::*;
+mod los;
 mod tiler;
 
 // Please save your API key in gmap_key.txt in the `resources` directory.
 const GOOGLE_MAPS_API_KEY: &str = include_str!("../resources/gmap_key.txt");
 const INDEX_HTML: &str = include_str!("../resources/index.html");
+use rf_signal_algorithms::{Frequency, LatLon};
 use rocket::Response;
 use rocket::{http::ContentType, http::Status, response::content};
 use rocket_contrib::json::Json;
@@ -32,6 +34,12 @@ fn index() -> content::Html<String> {
 fn tower_marker<'a>() -> rocket::response::Stream<std::fs::File> {
     use std::fs::File;
     rocket::response::Stream::from(File::open("resources/tower_Marker.png").unwrap())
+}
+
+#[get("/pngegg.png")]
+fn pngegg<'a>() -> rocket::response::Stream<std::fs::File> {
+    use std::fs::File;
+    rocket::response::Stream::from(File::open("resources/pngegg.png").unwrap())
 }
 
 #[get("/towers", format = "json")]
@@ -71,13 +79,31 @@ fn signalmap<'a>(
     frequency: f64,
 ) -> Response<'a> {
     let srtm_path = WISP.read().srtm_path.clone();
-    let image_buffer =
-        tiler::signalmap_tile(swlat, swlon, nelat, nelon, cpe_height, frequency, &srtm_path);
+    let image_buffer = tiler::signalmap_tile(
+        swlat, swlon, nelat, nelon, cpe_height, frequency, &srtm_path,
+    );
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
     response_build.status(Status::Ok);
     response_build.streamed_body(std::io::Cursor::new(image_buffer));
     response_build.finalize()
+}
+
+#[get("/mapclick/<lat>/<lon>/<cpe_height>/<frequency>", format = "json")]
+fn map_click<'a>(
+    lat: f64,
+    lon: f64,
+    frequency: f64,
+    cpe_height: f64,
+) -> Json<Vec<los::TowerEvaluation>> {
+    let srtm_path = WISP.read().srtm_path.clone();
+    let pos = LatLon::new(lat, lon);
+    Json(los::evaluate_tower_click(
+        &pos,
+        Frequency::with_ghz(frequency),
+        cpe_height,
+        &srtm_path,
+    ))
 }
 
 fn main() {
@@ -100,7 +126,16 @@ fn main() {
     rocket::ignite()
         .mount(
             "/",
-            routes![index, tower_marker, towers, heightmap, losmap, signalmap],
+            routes![
+                index,
+                tower_marker,
+                towers,
+                heightmap,
+                losmap,
+                signalmap,
+                map_click,
+                pngegg
+            ],
         )
         .launch();
 }

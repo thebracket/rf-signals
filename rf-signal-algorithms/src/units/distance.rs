@@ -1,5 +1,5 @@
 /// Provides distance unit conversions for this crate.
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct Distance(pub f64);
 
 impl Distance {

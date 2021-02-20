@@ -57,6 +57,7 @@
         let towerList = [];
         let map = null;
         let currentOverlay = null;
+        let currentMarker = null;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -72,12 +73,63 @@
                 $("#cpeHeightDisplay").text(h);
             });
             map.addListener("click", (mapsMouseEvent) => {
-                console.log(mapsMouseEvent.latLng);
+                let pos = mapsMouseEvent.latLng;
+                // Add a marker
+                if (currentMarker != null) {
+                    currentMarker.setMap(null);
+                    currentMarker = null;
+                }
+                currentMarker = new google.maps.Marker({
+                    position: { lat: pos.lat(), lng: pos.lng() },
+                    map: map,
+                    icon: 'pngegg.png',
+                    title: "Current Location"
+                });
+                // Draw lines to towers
+                for (var i=0; i<towerList.length; i++) {
+                    let t = towerList[i];
+                    if (t.cpeLine != null) {
+                        t.cpeLine.setMap(null);
+                        t.cpeLine = null;
+                    }
+                    if (t.lineWindow != null) {
+                        t.lineWindow.setMap(null);
+                        t.lineWindow = null;
+                    }
+                }
+
+                let h = $("#cpeHeight").val();
+                let frequency = $("#freq").children("option:selected").val();
+                $.get("/mapclick/" + pos.lat() + "/" + pos.lng() + "/" + h + "/" + frequency, (data) => {
+                    for (var j=0; j<data.length; j++) {
+                        let link = data[j];
+                        let tower = towerList[link.i];
+                        let path = [ { lat: pos.lat(), lng: pos.lng() }, { lat: link.lat, lng: link.lon } ];
+                        tower.cpeLine = new google.maps.Polyline({
+                            path: path,
+                            geodesic: true,
+                            strokeColor: color_ramp(link.rssi),
+                            strokeOpacity: 1.0,
+                            strokeWeight: 4,
+                        });
+                        tower.cpeLine.setMap(map);
+                        google.maps.event.addListener(tower.cpeLine, 'mouseover', (e) => {
+                            tower.lineWindow = new google.maps.InfoWindow();
+                            tower.lineWindow.setPosition(e.latLng);
+                            tower.lineWindow.setContent("<strong>Path to " + tower.name + "</strong><br /><strong>Estimated RSSI:</strong> " + link.rssi.toFixed(1) + "<br /><strong>Distance:</strong> " + link.distance_km.toFixed(1) + " km");
+                            tower.lineWindow.open(map);
+                        });
+                        google.maps.event.addListener(tower.cpeLine, 'mouseout', (e) => {
+                            tower.lineWindow.setMap(null);
+                            tower.lineWindow = null;
+                        });
+                    }
+                });
             });
         }
 
         function loadTowers() {
-            $.get("/towers", function(data) {
+            $.get("/towers", (data) => {
                 for (var i=0; i<data.length; i++) {
                     data[i].marker = new google.maps.Marker({
                         position: { lat: data[i].lat, lng: data[i].lon },
@@ -85,6 +137,8 @@
                         icon: 'tower_Marker.png',
                         title: data[i].name
                     });
+                    data[i].cpeLine = null;
+                    data[i].lineWindow = null;
                 }
                 towerList = data;
             });
@@ -209,6 +263,34 @@
                 let url = "signalmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/" + h + "/" + frequency;
                 this.image = url;
             }
+        }
+
+        function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+            var R = 6371; // Radius of the earth in km
+            var dLat = deg2rad(lat2-lat1);  // deg2rad below
+            var dLon = deg2rad(lon2-lon1); 
+            var a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2)
+                ; 
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            var d = R * c; // Distance in km
+            return d;
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI/180)
+        }
+
+        function color_ramp(rssi) {
+            rssi = Math.abs(rssi);
+            if (rssi < 65.0) {
+                return "#00FF00";
+            } else if (rssi < 75.0) {
+                return "#FFFF00";
+            }
+            return "#FF0000";
         }
 
         $(document).ready(initMap);
