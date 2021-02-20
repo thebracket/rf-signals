@@ -23,6 +23,14 @@
             border-radius: 4px;
             padding: 4px;
         }
+
+        #searchBox {
+            left: 80%;
+            top: 10px;
+            width: 300px;
+            z-index: 500;
+            position: absolute;
+        }
     </style>
 </head>
 <body>
@@ -48,6 +56,10 @@
         </select>
     </div>
 
+    <div id="searchBox">
+        Search: <input type="text" id="searcher" style="width: 250px"></input>
+    </div>
+
     <script>
         const IspName = _ISP_NAME_;
         const CenterLat = _CENTER_LAT_;
@@ -58,6 +70,7 @@
         let map = null;
         let currentOverlay = null;
         let currentMarker = null;
+        let addressMarker = null;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -123,6 +136,29 @@
                             tower.lineWindow.setMap(null);
                             tower.lineWindow = null;
                         });
+                    }
+                });
+            });
+
+            $("#searcher").change(function(data) {
+                if (addressMarker != null) {
+                    addressMarker.setMap(null);
+                }
+
+                var term = $("#searcher").val();
+                term = encodeURIComponent(term);
+                var url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + term + "&key=_GMAPKEY_";
+                $.get(url, function(gc) {
+                    //console.log(gc);
+                    if (gc.results.length > 0) {
+                        var loc = gc.results[0].geometry.location;
+                        addressMarker = new google.maps.Marker({
+                            position: { lat: loc.lat, lng: loc.lng },
+                            map: map,
+                            title: $("#searcher").val()
+                        });
+                        map.panTo({ lat: loc.lat, lng: loc.lng });
+                        map.setZoom(17);
                     }
                 });
             });
