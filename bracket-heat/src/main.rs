@@ -95,7 +95,7 @@ fn map_click<'a>(
     lon: f64,
     frequency: f64,
     cpe_height: f64,
-) -> Json<Vec<los::TowerEvaluation>> {
+) -> Json<los::ClickSite> {
     let srtm_path = WISP.read().srtm_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::evaluate_tower_click(

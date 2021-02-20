@@ -71,6 +71,7 @@
         let currentOverlay = null;
         let currentMarker = null;
         let addressMarker = null;
+        let currentClickInfo = null;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -98,6 +99,10 @@
                     icon: 'pngegg.png',
                     title: "Current Location"
                 });
+                if (currentClickInfo != null) {
+                    currentClickInfo.setMap(null);
+                    currentClickInfo = null;
+                }
                 // Draw lines to towers
                 for (var i=0; i<towerList.length; i++) {
                     let t = towerList[i];
@@ -114,8 +119,30 @@
                 let h = $("#cpeHeight").val();
                 let frequency = $("#freq").children("option:selected").val();
                 $.get("/mapclick/" + pos.lat() + "/" + pos.lng() + "/" + h + "/" + frequency, (data) => {
-                    for (var j=0; j<data.length; j++) {
-                        let link = data[j];
+                    currentClickInfo = new google.maps.InfoWindow();
+                    currentClickInfo.setPosition({ lat: pos.lat(), lng: pos.lng() });
+                    let towerSummary = "<table border='1' cellpadding='2' cellspacing='0'><tr style='font-weight: bold'><td>Tower</td><td>Distance</td><td>RSSI</td><td>Mode</td></tr>";
+                    for (var j=0; j<data.towers.length; j++) {
+                        let link = data.towers[j];
+                        towerSummary += "<tr>";
+                        towerSummary += "<td>" + towerList[link.i].name + "</td>";
+                        towerSummary += "<td>" + link.distance_km.toFixed(2) + "km</td>";
+                        towerSummary += "<td>" + link.rssi.toFixed(2) + "dB</td>";
+                        towerSummary += "<td>" + link.mode + "</td>";
+                        towerSummary += "</tr>";
+                    }
+                    towerSummary += "</table>";
+                    currentClickInfo.setContent(
+                        "<strong>Location:</strong>: " + pos.lat().toFixed(4) + ", " + pos.lng().toFixed(4) + "<br />" +
+                        "<strong>Ground (SRTM) Altitude</strong>: " + data.base_height_m + " m<br />" +
+                        "<strong>Lidar (Clutter) Altitude</strong>: " + data.lidar_height_m + " m<br />" +
+                        "<strong>Estimated Location Altitude Above Ground</strong>: " + (data.lidar_height_m - data.base_height_m).toFixed(0) + " m<br />" +
+                        towerSummary
+                    );
+                    currentClickInfo.open(map);
+
+                    for (var j=0; j<data.towers.length; j++) {
+                        let link = data.towers[j];
                         let tower = towerList[link.i];
                         let path = [ { lat: pos.lat(), lng: pos.lng() }, { lat: link.lat, lng: link.lon } ];
                         tower.cpeLine = new google.maps.Polyline({
@@ -129,7 +156,7 @@
                         google.maps.event.addListener(tower.cpeLine, 'mouseover', (e) => {
                             tower.lineWindow = new google.maps.InfoWindow();
                             tower.lineWindow.setPosition(e.latLng);
-                            tower.lineWindow.setContent("<strong>Path to " + tower.name + "</strong><br /><strong>Estimated RSSI:</strong> " + link.rssi.toFixed(1) + "<br /><strong>Distance:</strong> " + link.distance_km.toFixed(1) + " km");
+                            tower.lineWindow.setContent("<strong>Path to " + tower.name + "</strong><br /><strong>Estimated RSSI:</strong> " + link.rssi.toFixed(1) + "<br /><strong>Distance:</strong> " + link.distance_km.toFixed(1) + " km<br /><strong>Mode</strong>: " + link.mode);
                             tower.lineWindow.open(map);
                         });
                         google.maps.event.addListener(tower.cpeLine, 'mouseout', (e) => {
