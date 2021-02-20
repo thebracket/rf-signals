@@ -126,7 +126,7 @@ fn main() {
     // Do some replace magic to place the correct key and version in the HTML
     *INDEX_FINAL.write() = INDEX_HTML
         .replace("_BANNER_", "Bracket-Heat 0.1")
-        .replace("_GMAPKEY_", GOOGLE_MAPS_API_KEY)
+        .replace("_GMAPKEY_", &GOOGLE_MAPS_API_KEY.replace("\n", ""))
         .replace("_CENTER_LAT_", &wisp_def.center.0.to_string())
         .replace("_CENTER_LON_", &wisp_def.center.1.to_string())
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
