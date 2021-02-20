@@ -17,7 +17,10 @@ pub mod lidar {
 
 //#[cfg(feature = "srtm")]
 pub use mapping::latlon::LatLon;
-pub use mapping::{height_tile_elevations, lat_lon_tile, lat_lon_path_10m, lat_lon_vec_to_heights, has_line_of_sight};
+pub use mapping::{
+    has_line_of_sight, height_tile_elevations, lat_lon_path_10m, lat_lon_tile,
+    lat_lon_vec_to_heights,
+};
 
 // Re-export geo
 //#[cfg(feature = "srtm")]

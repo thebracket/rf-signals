@@ -7,6 +7,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
         }
         #map {
             position: relative;
@@ -30,6 +31,19 @@
             width: 300px;
             z-index: 500;
             position: absolute;
+        }
+
+        #ClickInfo {
+            display: none;
+            position: absolute;
+            left: 5px;
+            right: 5px;
+            top: 60px;
+            bottom: 5px;
+            background-color: #ddd;
+            border: 1px solid black;
+            border-radius: 4px;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -60,6 +74,20 @@
         Search: <input type="text" id="searcher" style="width: 250px"></input>
     </div>
 
+    <div id="ClickInfo">
+        <strong>Current position: <span id="ClickInfoLATLON" style="margin-right: 50px"></span></strong>
+        <select id="clickTowerList"></select>
+        <button id="clickTowerPlot" style="background-color: #55FF55;">Plot Path to Tower</button>
+        <br />
+        <div id="losplot" style="width: 100%; height: 95%; overflow-x: scroll; background-color: #555;"></div>
+        <div style="position: absolute; left: 95%; top: 95%; width: 200px; height: 25px;">
+            <button onclick='$("#ClickInfo").hide(); $("#losplot").empty();' style="background-color: red;">Close</button>
+        </div>
+        <div style="position: absolute; left: 95%; top: 95%; width: 200px; height: 25px;">
+            <button onclick='$("#ClickInfo").hide(); $("#losplot").empty();' style="background-color: red;">Close</button>
+        </div>
+    </div>
+
     <script>
         const IspName = _ISP_NAME_;
         const CenterLat = _CENTER_LAT_;
@@ -72,6 +100,8 @@
         let currentMarker = null;
         let addressMarker = null;
         let currentClickInfo = null;
+        let clickLat = 0.0;
+        let clickLon = 0.0;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -138,7 +168,7 @@
                         "<strong>Lidar (Clutter) Altitude</strong>: " + data.lidar_height_m + " m<br />" +
                         "<strong>Estimated Location Altitude Above Ground</strong>: " + (data.lidar_height_m - data.base_height_m).toFixed(0) + " m<br />" +
                         towerSummary +
-                        "<em>Click the tower marker to open the Path Explorer</em>"
+                        "<button onclick='openExplorer(" + pos.lat() + ", " + pos.lng() +")'>Open Location Explorer</button>"
                     );
                     currentClickInfo.open(map);
 
@@ -327,6 +357,127 @@
                 let url = "signalmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/" + h + "/" + frequency;
                 this.image = url;
             }
+        }
+
+        function openExplorer(lat, lon) {
+            $("#ClickInfoLATLON").text(lat + ", " + lon);
+            $("#clickTowerList").empty();
+
+            for (var i=0; i < towerList.length; i++) {
+                towerList[i].d = getDistanceFromLatLonInKm(lat, lon, towerList[i].lat, towerList[i].lon);
+            }
+            towerList.sort((a,b) => (a.d > b.d) ? 1 : -1);
+
+            for (var i=0; i < towerList.length; i++) {
+                $("#clickTowerList").append(
+                    $('<option></option>').val(i).html(towerList[i].name + ", " + towerList[i].d.toFixed(2) + "km")
+                );
+            }
+            clickLat = lat;
+            clickLon = lon;
+            $("#ClickInfo").show();
+            getTowerLOS();
+        }
+
+        function getTowerLOS() {
+            let towerId = $("#clickTowerList").find('option:selected').val();
+            $("#losplot").html("<span style='color: white; font-size: 32pt'>Loading - please wait</span>");
+            let h = $("#cpeHeight").val();
+            let frequency = $("#freq").children("option:selected").val();
+            $.get("/losplot/" + clickLat + "/" + clickLon + "/" + towerId + "/" + h + "/" + frequency, (data) => {
+                console.log(data);
+
+                // Min/max height for scaling
+                var minHeight = 10000;
+                var maxHeight = -10000;
+                for (var i=0; i<data.srtm.length; i++) {
+                    var h = Math.max(data.srtm[i], data.lidar[i]);
+                    if (h < minHeight) { minHeight = h; }
+                    if (h > maxHeight) { maxHeight = h; }
+                }
+                if (maxHeight < towerList[towerId].height_meters + data.srtm[data.srtm.length - 1] + 5)
+                {
+                    maxHeight = towerList[towerId].height_meters + data.srtm[data.srtm.length - 1] + 5;
+                }
+                minHeight -= 5;
+                maxHeight += 5;
+                var heightExtent = maxHeight - minHeight;
+                var height = $("#losplot").height();
+                var yScale = height / heightExtent;
+
+                // Setup a canvas
+                $("#losplot").empty();
+                $("#losplot").html("<canvas id='losc' width=" + data.srtm.length + " height=400></canvas>");
+                var canvas = document.getElementById("losc");
+                canvas.height = height;
+                canvas.width = data.srtm.length + 25;
+                var ctx = canvas.getContext('2d');
+                ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                var grd = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+                grd.addColorStop(0, '#8ED6FF');
+                grd.addColorStop(1, '#004CB3');
+                ctx.fillStyle = grd;
+                ctx.fill();
+
+                // Draw the terrain plot
+                var cpeHeight = parseFloat($("#cpeHeight").val());
+                if (isNaN(cpeHeight)) { cpeHeight = 2.0; }
+                var startAltitude = Math.max(data.srtm[0], data.lidar[0]) + cpeHeight;
+                var endAltitude = data.srtm[data.srtm.length - 1] + towerList[towerId].height_meters;
+                var altitudeStep = (endAltitude - startAltitude) / data.srtm.length;
+                var currentAltitude = startAltitude;
+
+                for (var i=0; i<data.srtm.length; i++) {
+                    var x = i + 20;
+                    var terrain = (data.srtm[i] - minHeight) * yScale;
+                    let clutter_above_terrain = Math.max(data.srtm[i], data.lidar[i]) - data.srtm[i];
+                    var clutter = (data.srtm[i] + clutter_above_terrain - minHeight) * yScale;
+                    //console.log(terrain, clutter, clutter_above_terrain);
+                    ctx.strokeStyle = "#00FF00";
+                    ctx.beginPath();
+                    ctx.moveTo(x, height);
+                    ctx.lineTo(x, height - terrain);
+                    ctx.stroke();
+                    ctx.strokeStyle = "#FF9900";
+                    ctx.beginPath();
+                    ctx.moveTo(x, height - terrain);
+                    ctx.lineTo(x, height - clutter);
+                    ctx.stroke();
+
+                    // Connection line
+                    ctx.strokeStyle = "#FF0000";
+                    ctx.beginPath();
+                    ctx.moveTo(x-1, height - ((currentAltitude - minHeight) * yScale));
+                    ctx.lineTo(x, height - ((currentAltitude + altitudeStep - minHeight) * yScale));
+                    ctx.stroke();
+
+                    // Fresnel Zones
+                    ctx.strokeStyle = "#AAAAAA";
+                    let f = currentAltitude + data.fresnel[i];
+                    ctx.beginPath();
+                    ctx.moveTo(x-1, height - ((f - minHeight) * yScale));
+                    ctx.lineTo(x, height - ((f + altitudeStep - minHeight) * yScale));
+                    ctx.stroke();
+
+                    f = currentAltitude - data.fresnel[i];
+                    ctx.beginPath();
+                    ctx.moveTo(x-1, height - ((f - minHeight) * yScale));
+                    ctx.lineTo(x, height - ((f + altitudeStep - minHeight) * yScale));
+                    ctx.stroke();
+
+                    currentAltitude += altitudeStep;
+                }
+
+                // Add altitude decorations
+
+                // Add text
+                ctx.font = "12pt Arial";
+                ctx.fillStyle = "#000000";
+                ctx.fillText("Distance: " + data.distance_m.toFixed(0) + "m", 10, 20);
+                ctx.fillText("DB Loss: " + data.dbloss.toFixed(0) + " dB", 10, 40);
+                ctx.fillText("Mode: " + data.mode, 10, 60);
+                ctx.fillText("Approx RSSI (Medusa): " + (69.0 - data.dbloss).toFixed(0), 10, 80);
+            });
         }
 
         function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {

@@ -12,7 +12,7 @@ mod tiler;
 const GOOGLE_MAPS_API_KEY: &str = include_str!("../resources/gmap_key.txt");
 const INDEX_HTML: &str = include_str!("../resources/index.html");
 use rf_signal_algorithms::{Frequency, LatLon};
-use rocket::{Response, config::Environment, Config};
+use rocket::{config::Environment, Config, Response};
 use rocket::{http::ContentType, http::Status, response::content};
 use rocket_contrib::json::Json;
 
@@ -90,18 +90,32 @@ fn signalmap<'a>(
 }
 
 #[get("/mapclick/<lat>/<lon>/<cpe_height>/<frequency>", format = "json")]
-fn map_click<'a>(
-    lat: f64,
-    lon: f64,
-    frequency: f64,
-    cpe_height: f64,
-) -> Json<los::ClickSite> {
+fn map_click<'a>(lat: f64, lon: f64, frequency: f64, cpe_height: f64) -> Json<los::ClickSite> {
     let srtm_path = WISP.read().srtm_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::evaluate_tower_click(
         &pos,
         Frequency::with_ghz(frequency),
         cpe_height,
+        &srtm_path,
+    ))
+}
+
+#[get("/losplot/<lat>/<lon>/<tower_index>/<cpe_height>/<frequency>")]
+fn los_plot<'a>(
+    lat: f64,
+    lon: f64,
+    tower_index: usize,
+    cpe_height: f64,
+    frequency: f64,
+) -> Json<los::LineOfSightPlot> {
+    let srtm_path = WISP.read().srtm_path.clone();
+    let pos = LatLon::new(lat, lon);
+    Json(los::los_plot(
+        &pos,
+        tower_index,
+        cpe_height,
+        Frequency::with_ghz(frequency),
         &srtm_path,
     ))
 }
@@ -121,10 +135,10 @@ fn main() {
     println!("Indexing LiDAR Data - Please Wait");
     rf_signal_algorithms::lidar::index_all_lidar(&wisp_def.lidar_path);
 
-
     let config = Config::build(Environment::Production)
         .port(wisp_def.listen_port)
-        .finalize().unwrap();
+        .finalize()
+        .unwrap();
 
     *WISP.write() = wisp_def;
 
@@ -139,7 +153,8 @@ fn main() {
                 losmap,
                 signalmap,
                 map_click,
-                pngegg
+                pngegg,
+                los_plot
             ],
         )
         .launch();

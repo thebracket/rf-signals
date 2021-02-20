@@ -1,14 +1,17 @@
 pub mod latlon;
 pub mod srtm;
 pub use latlon::LatLon;
+use lazy_static::*;
 use lidar::lidar_elevation;
+use lru::LruCache;
+use parking_lot::Mutex;
 use rayon::prelude::*;
 use srtm::get_altitude;
-use lazy_static::*;
-use parking_lot::Mutex;
-use lru::LruCache;
 
-use crate::{Distance, geometry::{haversine_distance, haversine_intermediate}};
+use crate::{
+    geometry::{haversine_distance, haversine_intermediate},
+    Distance,
+};
 pub mod lidar;
 
 /// Create a grid of LatLon entries for a bounded tile, returning (x, y, LatLon).
@@ -64,9 +67,7 @@ fn highest_altitude(point: &LatLon, srtm_path: &str) -> u16 {
 pub fn height_tile_elevations(points: &[(u32, u32, LatLon)], srtm_path: &str) -> Vec<u16> {
     points
         .par_iter()
-        .map(|(_, _, point)| {
-            highest_altitude(point, srtm_path)
-        })
+        .map(|(_, _, point)| highest_altitude(point, srtm_path))
         .collect()
 }
 
@@ -86,13 +87,15 @@ pub fn lat_lon_path_10m(src: &LatLon, dst: &LatLon) -> Vec<LatLon> {
 pub fn lat_lon_vec_to_heights(points: &[LatLon], srtm_path: &str) -> Vec<u16> {
     points
         .par_iter()
-        .map(|point| {
-            highest_altitude(point, srtm_path)
-        })
+        .map(|point| highest_altitude(point, srtm_path))
         .collect()
 }
 
-pub fn has_line_of_sight(los_path: &[u16], start_elevation: Distance, end_elevation: Distance) -> bool {
+pub fn has_line_of_sight(
+    los_path: &[u16],
+    start_elevation: Distance,
+    end_elevation: Distance,
+) -> bool {
     let start_height = los_path[0] + start_elevation.as_meters() as u16;
     let end_height = end_elevation.as_meters() as u16; // Not using terrain because of confusion with clutter on lidar
     let height_step = (end_height as f64 - start_height as f64) / los_path.len() as f64;
