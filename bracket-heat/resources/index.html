@@ -45,6 +45,18 @@
             border-radius: 4px;
             z-index: 1000;
         }
+
+        #thinking {
+            position: absolute;
+            left: 10px;
+            width: 200px;
+            top: 50px;
+            height: 20px;
+            background-color: #aaaaff;
+            border-radius: 4px;
+            z-index: 500;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -52,6 +64,8 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=_GMAPKEY_&libraries=&v=weekly"></script>
 
     <div id="map"></div>
+
+    <div id="thinking">Processing - Please Wait</div>
 
     <div id="GroundControl">
         <span id="netName" style="font-weight: bold; font-size: 8pt;"></span>
@@ -272,6 +286,7 @@
         class DynamicImageOverlay extends google.maps.OverlayView {
             constructor(bounds) {
                 super();
+                $("#thinking").show();
             }
 
             onAdd() {
@@ -285,6 +300,7 @@
                 img.style.width = "100%";
                 img.style.height = "100%";
                 img.style.position = "absolute";
+                img.onload = () => $("#thinking").hide();
                 this.div.appendChild(img);
                 // Add the element to the "overlayLayer" pane.
                 const panes = this.getPanes();
