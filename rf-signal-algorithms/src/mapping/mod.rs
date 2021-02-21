@@ -84,6 +84,19 @@ pub fn lat_lon_path_10m(src: &LatLon, dst: &LatLon) -> Vec<LatLon> {
     path
 }
 
+pub fn lat_lon_path_1m(src: &LatLon, dst: &LatLon) -> Vec<LatLon> {
+    let d = haversine_distance(src, dst);
+    let extent_step = 1.0 / d.as_meters();
+    let mut extent = 0.0;
+    let mut path = Vec::with_capacity((d.as_meters() / 10.0) as usize);
+    while extent <= 1.0 {
+        let step_point = haversine_intermediate(src, dst, extent);
+        path.push(step_point);
+        extent += extent_step;
+    }
+    path
+}
+
 pub fn lat_lon_vec_to_heights(points: &[LatLon], srtm_path: &str) -> Vec<u16> {
     points
         .par_iter()

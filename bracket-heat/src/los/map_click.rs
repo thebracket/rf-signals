@@ -1,7 +1,7 @@
 use crate::WISP;
 use rf_signal_algorithms::{
     free_space_path_loss_db, geometry::haversine_distance, has_line_of_sight, itwom_point_to_point,
-    lat_lon_path_10m, lat_lon_vec_to_heights, lidar::lidar_elevation, srtm::get_altitude, Distance,
+    lat_lon_path_1m, lat_lon_vec_to_heights, lidar::lidar_elevation, srtm::get_altitude, Distance,
     Frequency, LatLon, PTPClimate, PTPPath,
 };
 use serde::{Deserialize, Serialize};
@@ -41,7 +41,7 @@ pub fn evaluate_tower_click(
             let base_tower_height = get_altitude(&LatLon::new(t.lat, t.lon), srtm_path)
                 .unwrap_or(Distance::with_meters(0.0))
                 .as_meters();
-            let path = lat_lon_path_10m(&LatLon::new(t.lat, t.lon), pos);
+            let path = lat_lon_path_1m(&LatLon::new(t.lat, t.lon), pos);
             let los_path = lat_lon_vec_to_heights(&path, srtm_path);
             let d = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
             let (dbloss, mode) = {
@@ -52,7 +52,7 @@ pub fn evaluate_tower_click(
                     path_as_distances,
                     Distance::with_meters(t.height_meters),
                     Distance::with_meters(cpe_height),
-                    Distance::with_meters(10.0),
+                    Distance::with_meters(1.0),
                 )
                 .unwrap();
 

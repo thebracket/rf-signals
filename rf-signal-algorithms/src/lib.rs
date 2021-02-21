@@ -19,7 +19,7 @@ pub mod lidar {
 pub use mapping::latlon::LatLon;
 pub use mapping::{
     has_line_of_sight, height_tile_elevations, lat_lon_path_10m, lat_lon_tile,
-    lat_lon_vec_to_heights,
+    lat_lon_vec_to_heights, lat_lon_path_1m
 };
 
 // Re-export geo
