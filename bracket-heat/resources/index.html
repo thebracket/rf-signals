@@ -91,12 +91,8 @@
     <div id="ClickInfo">
         <strong>Current position: <span id="ClickInfoLATLON" style="margin-right: 50px"></span></strong>
         <select id="clickTowerList"></select>
-        <button id="clickTowerPlot" style="background-color: #55FF55;">Plot Path to Tower</button>
         <br />
         <div id="losplot" style="width: 100%; height: 95%; overflow-x: scroll; background-color: #555;"></div>
-        <div style="position: absolute; left: 95%; top: 95%; width: 200px; height: 25px;">
-            <button onclick='$("#ClickInfo").hide(); $("#losplot").empty();' style="background-color: red;">Close</button>
-        </div>
         <div style="position: absolute; left: 95%; top: 95%; width: 200px; height: 25px;">
             <button onclick='$("#ClickInfo").hide(); $("#losplot").empty();' style="background-color: red;">Close</button>
         </div>
@@ -234,6 +230,10 @@
                     }
                 });
             });
+
+            $("#clickTowerList").change(() => {
+                getTowerLOS();
+            });
         }
 
         function loadTowers() {
@@ -247,6 +247,7 @@
                     });
                     data[i].cpeLine = null;
                     data[i].lineWindow = null;
+                    data[i].id = i;
                 }
                 towerList = data;
             });
@@ -386,7 +387,7 @@
 
             for (var i=0; i < towerList.length; i++) {
                 $("#clickTowerList").append(
-                    $('<option></option>').val(i).html(towerList[i].name + ", " + towerList[i].d.toFixed(2) + "km")
+                    $('<option></option>').val(towerList[i].id).html(towerList[i].name + ", " + towerList[i].d.toFixed(2) + "km")
                 );
             }
             clickLat = lat;
@@ -397,6 +398,7 @@
 
         function getTowerLOS() {
             let towerId = $("#clickTowerList").find('option:selected').val();
+            console.log(towerId);
             $("#losplot").html("<span style='color: white; font-size: 32pt'>Loading - please wait</span>");
             let h = $("#cpeHeight").val();
             let frequency = $("#freq").children("option:selected").val();
