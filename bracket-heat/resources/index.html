@@ -438,8 +438,9 @@
                 // Draw the terrain plot
                 var cpeHeight = parseFloat($("#cpeHeight").val());
                 if (isNaN(cpeHeight)) { cpeHeight = 2.0; }
-                var startAltitude = Math.max(data.srtm[0], data.lidar[0]) + cpeHeight;
-                var endAltitude = data.srtm[data.srtm.length - 1] + towerList[towerId].height_meters;
+                var startAltitude = data.srtm[0] + towerList[towerId].height_meters;
+                let len = data.srtm.length - 1;
+                var endAltitude = Math.max(data.srtm[len], data.lidar[len]) + cpeHeight;
                 var altitudeStep = (endAltitude - startAltitude) / data.srtm.length;
                 var currentAltitude = startAltitude;
 

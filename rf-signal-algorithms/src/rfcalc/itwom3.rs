@@ -54,7 +54,7 @@ pub struct PTPResult {
 
 #[derive(Debug, PartialEq)]
 pub enum PTPError {
-    DistanceTooShort,
+    //DistanceTooShort,
     DistanceTooLong,
     AltitudeTooHigh,
     AltitudeTooLow,
@@ -80,9 +80,7 @@ impl PTPPath {
         step_size: Distance,
     ) -> Result<Self, PTPError> {
         let total_distance: f64 = elevations.len() as f64 * step_size.as_meters();
-        if total_distance < 1000.0 {
-            return Err(PTPError::DistanceTooShort);
-        } else if total_distance > 2000000.0 {
+        if total_distance > 2000000.0 {
             return Err(PTPError::DistanceTooLong);
         }
 
@@ -220,7 +218,7 @@ pub fn itwom_point_to_point(
 mod test {
     use super::*;
 
-    #[test]
+    /*#[test]
     fn test_too_short() {
         assert_eq!(
             PTPPath::new(
@@ -232,7 +230,7 @@ mod test {
             .err(),
             Some(PTPError::DistanceTooShort)
         );
-    }
+    }*/
 
     #[test]
     fn test_too_long() {

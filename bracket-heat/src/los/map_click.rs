@@ -41,23 +41,13 @@ pub fn evaluate_tower_click(
             let base_tower_height = get_altitude(&LatLon::new(t.lat, t.lon), srtm_path)
                 .unwrap_or(Distance::with_meters(0.0))
                 .as_meters();
-            let path = lat_lon_path_10m(pos, &LatLon::new(t.lat, t.lon));
+            let path = lat_lon_path_10m(&LatLon::new(t.lat, t.lon), pos);
             let los_path = lat_lon_vec_to_heights(&path, srtm_path);
-            let los = has_line_of_sight(
-                &los_path,
-                Distance::with_meters(cpe_height),
-                Distance::with_meters(t.height_meters + base_tower_height),
-            );
             let d = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
-            let (dbloss, mode) = if los || d.as_meters() < 1000.0 {
-                (
-                    free_space_path_loss_db(frequency, d),
-                    "LOS Direct".to_string(),
-                )
-            } else {
+            let (dbloss, mode) = {
                 let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
                 let path_len = path_as_distances.len();
-                path_as_distances[path_len - 1] = base_tower_height;
+                path_as_distances[0] = base_tower_height;
                 let mut terrain_path = PTPPath::new(
                     path_as_distances,
                     Distance::with_meters(t.height_meters),
