@@ -94,7 +94,7 @@
         <br />
         <div id="losplot" style="width: 100%; height: 95%; overflow-x: scroll; background-color: #555;"></div>
         <div style="position: absolute; left: 95%; top: 95%; width: 200px; height: 25px;">
-            <button onclick='$("#ClickInfo").hide(); $("#losplot").empty();' style="background-color: red;">Close</button>
+            <button onclick='losExplorerVisible = false; $("#ClickInfo").hide(); $("#losplot").empty();' style="background-color: red;">Close</button>
         </div>
     </div>
 
@@ -112,6 +112,7 @@
         let currentClickInfo = null;
         let clickLat = 0.0;
         let clickLon = 0.0;
+        let losExplorerVisible = false;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -233,6 +234,12 @@
 
             $("#clickTowerList").change(() => {
                 getTowerLOS();
+            });
+
+            $("#cpeHeight").change(() => {
+                if (losExplorerVisible) {
+                    getTowerLOS();
+                }
             });
         }
 
@@ -392,6 +399,7 @@
             }
             clickLat = lat;
             clickLon = lon;
+            losExplorerVisible = true;
             $("#ClickInfo").show();
             getTowerLOS();
         }
