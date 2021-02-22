@@ -75,7 +75,7 @@
         <br />
         <span style="font-weight: bold; font-size: 8pt;">CPE Height (m):</span> <input type="range" min="1" max="20" value="2" class="slider" id="cpeHeight" />
         <span id="cpeHeightDisplay">2</span>
-        <select id="freq">
+        <select id="freq" style="font-size: 8pt;">
             <option value="60">60 Ghz</option>
             <option value="5.8">5.8 Ghz</option>
             <option value="3.6" selected="true">3.6 Ghz</option>
@@ -240,6 +240,16 @@
             });
 
             $("#cpeHeight").change(() => {
+                if (losExplorerVisible) {
+                    getTowerLOS();
+                }
+            });
+            $("#freq").change(() => {
+                if (losExplorerVisible) {
+                    getTowerLOS();
+                }
+            });
+            $("#linkBudget").change(() => {
                 if (losExplorerVisible) {
                     getTowerLOS();
                 }
@@ -501,25 +511,20 @@
                     ctx.lineTo(x, height - clutter);
                     ctx.stroke();
 
+                    // Fresnel Zones
+                    ctx.strokeStyle = "#FF8888";
+                    let f = currentAltitude + data.fresnel[i];
+                    ctx.beginPath();
+                    ctx.moveTo(x-1, height - ((f - minHeight) * yScale));
+                    f = currentAltitude - data.fresnel[i];
+                    ctx.lineTo(x-1, height - ((f - minHeight) * yScale));
+                    ctx.stroke();
+
                     // Connection line
                     ctx.strokeStyle = "#FF0000";
                     ctx.beginPath();
                     ctx.moveTo(x-1, height - ((currentAltitude - minHeight) * yScale));
                     ctx.lineTo(x, height - ((currentAltitude + altitudeStep - minHeight) * yScale));
-                    ctx.stroke();
-
-                    // Fresnel Zones
-                    ctx.strokeStyle = "#AAAAAA";
-                    let f = currentAltitude + data.fresnel[i];
-                    ctx.beginPath();
-                    ctx.moveTo(x-1, height - ((f - minHeight) * yScale));
-                    ctx.lineTo(x, height - ((f + altitudeStep - minHeight) * yScale));
-                    ctx.stroke();
-
-                    f = currentAltitude - data.fresnel[i];
-                    ctx.beginPath();
-                    ctx.moveTo(x-1, height - ((f - minHeight) * yScale));
-                    ctx.lineTo(x, height - ((f + altitudeStep - minHeight) * yScale));
                     ctx.stroke();
 
                     currentAltitude += altitudeStep;
