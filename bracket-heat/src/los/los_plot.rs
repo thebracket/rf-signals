@@ -71,11 +71,7 @@ pub fn los_plot(
                 .as_meters(),
         );
         lidar.push(lidar_elevation(loc));
-        fresnel.push(fresnel_radius(
-            walker,
-            d.as_meters() - walker,
-            frequency.as_mhz(),
-        ) * 0.6);
+        fresnel.push(fresnel_radius(walker, d.as_meters() - walker, frequency.as_mhz()) * 0.6);
         walker += 1.0;
     });
 

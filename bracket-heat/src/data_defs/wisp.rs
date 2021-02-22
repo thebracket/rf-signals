@@ -1,4 +1,4 @@
-use super::{Tower, LinkBudget};
+use super::{LinkBudget, Tower};
 use ron::de::from_reader;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -12,7 +12,7 @@ pub struct Wisp {
     pub towers: Vec<Tower>,
     pub srtm_path: String,
     pub lidar_path: String,
-    pub link_budgets: Vec<LinkBudget>
+    pub link_budgets: Vec<LinkBudget>,
 }
 
 pub fn load_wisp() -> Wisp {

@@ -86,7 +86,14 @@ fn signalmap<'a>(
 ) -> Response<'a> {
     let srtm_path = WISP.read().srtm_path.clone();
     let image_buffer = tiler::signalmap_tile(
-        swlat, swlon, nelat, nelon, cpe_height, frequency, &srtm_path, link_budget
+        swlat,
+        swlon,
+        nelat,
+        nelon,
+        cpe_height,
+        frequency,
+        &srtm_path,
+        link_budget,
     );
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
@@ -95,8 +102,17 @@ fn signalmap<'a>(
     response_build.finalize()
 }
 
-#[get("/mapclick/<lat>/<lon>/<cpe_height>/<frequency>/<link_budget>", format = "json")]
-fn map_click<'a>(lat: f64, lon: f64, frequency: f64, cpe_height: f64, link_budget: f64) -> Json<los::ClickSite> {
+#[get(
+    "/mapclick/<lat>/<lon>/<cpe_height>/<frequency>/<link_budget>",
+    format = "json"
+)]
+fn map_click<'a>(
+    lat: f64,
+    lon: f64,
+    frequency: f64,
+    cpe_height: f64,
+    link_budget: f64,
+) -> Json<los::ClickSite> {
     let srtm_path = WISP.read().srtm_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::evaluate_tower_click(
@@ -104,7 +120,7 @@ fn map_click<'a>(lat: f64, lon: f64, frequency: f64, cpe_height: f64, link_budge
         Frequency::with_ghz(frequency),
         cpe_height,
         &srtm_path,
-        link_budget
+        link_budget,
     ))
 }
 

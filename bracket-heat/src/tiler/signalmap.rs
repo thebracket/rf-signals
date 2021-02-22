@@ -23,7 +23,7 @@ pub fn signalmap_tile(
     cpe_height: f64,
     frequency: f64,
     srtm_path: &str,
-    link_budget: f64
+    link_budget: f64,
 ) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
     let wisp_reader = WISP.read();

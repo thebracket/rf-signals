@@ -28,7 +28,7 @@ pub fn evaluate_tower_click(
     frequency: Frequency,
     cpe_height: f64,
     srtm_path: &str,
-    link_budget: f64
+    link_budget: f64,
 ) -> ClickSite {
     let reader = WISP.read();
     let towers = reader
