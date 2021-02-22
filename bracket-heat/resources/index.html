@@ -171,7 +171,7 @@
                     for (var j=0; j<data.towers.length; j++) {
                         let link = data.towers[j];
                         towerSummary += "<tr>";
-                        towerSummary += "<td>" + towerList[link.i].name + "</td>";
+                        towerSummary += "<td>" + link.name + "</td>";
                         towerSummary += "<td>" + link.distance_km.toFixed(2) + "km</td>";
                         towerSummary += "<td>" + link.rssi.toFixed(2) + "dB</td>";
                         towerSummary += "<td>" + link.mode + "</td>";
@@ -190,7 +190,7 @@
 
                     for (var j=0; j<data.towers.length; j++) {
                         let link = data.towers[j];
-                        let tower = towerList[link.i];
+                        let tower = towerList[findTower(link.name)];
                         let path = [ { lat: pos.lat(), lng: pos.lng() }, { lat: link.lat, lng: link.lon } ];
                         tower.cpeLine = new google.maps.Polyline({
                             path: path,
@@ -203,7 +203,7 @@
                         google.maps.event.addListener(tower.cpeLine, 'mouseover', (e) => {
                             tower.lineWindow = new google.maps.InfoWindow();
                             tower.lineWindow.setPosition(e.latLng);
-                            tower.lineWindow.setContent("<strong>Path to " + tower.name + "</strong><br /><strong>Estimated RSSI:</strong> " + link.rssi.toFixed(1) + "<br /><strong>Distance:</strong> " + link.distance_km.toFixed(1) + " km<br /><strong>Mode</strong>: " + link.mode);
+                            tower.lineWindow.setContent("<strong>Path to " + link.name + "</strong><br /><strong>Estimated RSSI:</strong> " + link.rssi.toFixed(1) + "<br /><strong>Distance:</strong> " + link.distance_km.toFixed(1) + " km<br /><strong>Mode</strong>: " + link.mode);
                             tower.lineWindow.open(map);
                         });
                         google.maps.event.addListener(tower.cpeLine, 'mouseout', (e) => {
@@ -594,6 +594,12 @@
                     t.lineWindow.setMap(null);
                     t.lineWindow = null;
                 }
+            }
+        }
+
+        function findTower(name) {
+            for (i=0; i<towerList.length; i++) {
+                if (towerList[i].name == name) return i;
             }
         }
 

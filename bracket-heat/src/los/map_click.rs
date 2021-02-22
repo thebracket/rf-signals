@@ -15,7 +15,7 @@ pub struct ClickSite {
 
 #[derive(Clone, Serialize, Deserialize, Default)]
 pub struct TowerEvaluation {
-    pub i: usize,
+    pub name: String,
     pub lat: f64,
     pub lon: f64,
     pub rssi: f64,
@@ -72,7 +72,7 @@ pub fn evaluate_tower_click(
             let temporary_link_budget = link_budget - dbloss;
 
             TowerEvaluation {
-                i,
+                name: t.name.clone(),
                 lat: t.lat,
                 lon: t.lon,
                 rssi: temporary_link_budget,
