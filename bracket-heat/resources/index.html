@@ -166,6 +166,7 @@
                 $.get("/mapclick/" + pos.lat() + "/" + pos.lng() + "/" + h + "/" + frequency + "/" + lb, (data) => {
                     currentClickInfo = new google.maps.InfoWindow();
                     currentClickInfo.setPosition({ lat: pos.lat(), lng: pos.lng() });
+                    data.towers.sort((a,b) => (a.rssi < b.rssi) ? 1 : -1);
                     let towerSummary = "<table border='1' cellpadding='2' cellspacing='0'><tr style='font-weight: bold'><td>Tower</td><td>Distance</td><td>RSSI</td><td>Mode</td></tr>";
                     for (var j=0; j<data.towers.length; j++) {
                         let link = data.towers[j];
