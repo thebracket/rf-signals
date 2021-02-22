@@ -72,6 +72,7 @@
         <button id="btnNone">None</button>
         <button id="btnHeight">Height</button>
         <button id="btnSignal">Signal</button>
+        <button id="btnClear">Clear Lines/Markers</button>
         <br />
         <span style="font-weight: bold; font-size: 8pt;">CPE Height (m):</span> <input type="range" min="1" max="20" value="2" class="slider" id="cpeHeight" />
         <span id="cpeHeightDisplay">2</span>
@@ -293,6 +294,7 @@
             $("#btnNone").click(function() {
                 removeCurrentOverlay();
             });
+            $("#btnClear").click(clear_lines);
             $("#btnHeight").click(function() {
                 removeCurrentOverlay();
                 let bounds = map.getBounds();
@@ -569,6 +571,29 @@
                 return "#FFFF00";
             }
             return "#FF0000";
+        }
+
+        function clear_lines() {
+            if (currentMarker != null) {
+                currentMarker.setMap(null);
+                currentMarker = null;
+            }
+            if (currentClickInfo != null) {
+                currentClickInfo.setMap(null);
+                currentClickInfo = null;
+            }
+            // Draw lines to towers
+            for (var i=0; i<towerList.length; i++) {
+                let t = towerList[i];
+                if (t.cpeLine != null) {
+                    t.cpeLine.setMap(null);
+                    t.cpeLine = null;
+                }
+                if (t.lineWindow != null) {
+                    t.lineWindow.setMap(null);
+                    t.lineWindow = null;
+                }
+            }
         }
 
         $(document).ready(initMap);
