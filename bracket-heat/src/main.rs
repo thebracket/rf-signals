@@ -47,6 +47,11 @@ fn towers() -> Json<Vec<Tower>> {
     Json(WISP.read().towers.clone())
 }
 
+#[get("/budgets", format = "json")]
+fn budgets() -> Json<Vec<LinkBudget>> {
+    Json(WISP.read().link_budgets.clone())
+}
+
 #[get("/heightmap/<swlat>/<swlon>/<nelat>/<nelon>")]
 fn heightmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
     let srtm_path = WISP.read().srtm_path.clone();
@@ -69,7 +74,7 @@ fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -
     response_build.finalize()
 }
 
-#[get("/signalmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>/<frequency>")]
+#[get("/signalmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>/<frequency>/<link_budget>")]
 fn signalmap<'a>(
     swlat: f64,
     swlon: f64,
@@ -77,10 +82,11 @@ fn signalmap<'a>(
     nelon: f64,
     cpe_height: f64,
     frequency: f64,
+    link_budget: f64,
 ) -> Response<'a> {
     let srtm_path = WISP.read().srtm_path.clone();
     let image_buffer = tiler::signalmap_tile(
-        swlat, swlon, nelat, nelon, cpe_height, frequency, &srtm_path,
+        swlat, swlon, nelat, nelon, cpe_height, frequency, &srtm_path, link_budget
     );
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
@@ -89,8 +95,8 @@ fn signalmap<'a>(
     response_build.finalize()
 }
 
-#[get("/mapclick/<lat>/<lon>/<cpe_height>/<frequency>", format = "json")]
-fn map_click<'a>(lat: f64, lon: f64, frequency: f64, cpe_height: f64) -> Json<los::ClickSite> {
+#[get("/mapclick/<lat>/<lon>/<cpe_height>/<frequency>/<link_budget>", format = "json")]
+fn map_click<'a>(lat: f64, lon: f64, frequency: f64, cpe_height: f64, link_budget: f64) -> Json<los::ClickSite> {
     let srtm_path = WISP.read().srtm_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::evaluate_tower_click(
@@ -98,6 +104,7 @@ fn map_click<'a>(lat: f64, lon: f64, frequency: f64, cpe_height: f64) -> Json<lo
         Frequency::with_ghz(frequency),
         cpe_height,
         &srtm_path,
+        link_budget
     ))
 }
 
@@ -154,7 +161,8 @@ fn main() {
                 signalmap,
                 map_click,
                 pngegg,
-                los_plot
+                los_plot,
+                budgets
             ],
         )
         .launch();

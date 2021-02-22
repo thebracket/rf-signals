@@ -17,7 +17,7 @@
             z-index: 500;
             left: 300px;
             top: 10px;
-            width: 355px;
+            width: 550px;
             height: 40px;
             background-color: #eee;
             border: 1px solid black;
@@ -81,6 +81,7 @@
             <option value="3.6" selected="true">3.6 Ghz</option>
             <option value="2.4">2.4 Ghz</option>
         </select>
+        <select id="linkBudget" style="font-size: 8pt;"></select>
     </div>
 
     <div id="searchBox">
@@ -122,6 +123,7 @@
             map.setTilt(0);
             $("#netName").text(IspName);
             loadTowers();
+            loadLinkBudgets();
             bindHeight();
             $("#cpeHeight").change(function() {
                 let h = $("#cpeHeight").val();
@@ -159,7 +161,8 @@
 
                 let h = $("#cpeHeight").val();
                 let frequency = $("#freq").children("option:selected").val();
-                $.get("/mapclick/" + pos.lat() + "/" + pos.lng() + "/" + h + "/" + frequency, (data) => {
+                let lb = $("#linkBudget").children("option:selected").val();
+                $.get("/mapclick/" + pos.lat() + "/" + pos.lng() + "/" + h + "/" + frequency + "/" + lb, (data) => {
                     currentClickInfo = new google.maps.InfoWindow();
                     currentClickInfo.setPosition({ lat: pos.lat(), lng: pos.lng() });
                     let towerSummary = "<table border='1' cellpadding='2' cellspacing='0'><tr style='font-weight: bold'><td>Tower</td><td>Distance</td><td>RSSI</td><td>Mode</td></tr>";
@@ -257,6 +260,15 @@
                     data[i].id = i;
                 }
                 towerList = data;
+            });
+        }
+
+        function loadLinkBudgets() {
+            $.get("/budgets", (data) => {
+                for (var i=0; i<data.length; i++) {
+                    let budget = data[i].xmit_eirp + data[i].receive_gain;
+                    $("#linkBudget").append("<option value='" + budget + "'>" + data[i].name + "</option>");
+                }
             });
         }
 
@@ -378,7 +390,8 @@
                 let ne = bounds.getNorthEast();
                 let h = $("#cpeHeight").val();
                 let frequency = $("#freq").children("option:selected").val();
-                let url = "signalmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/" + h + "/" + frequency;
+                let lb = $("#linkBudget").children("option:selected").val();
+                let url = "signalmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/" + h + "/" + frequency + "/" + lb;
                 this.image = url;
             }
         }
@@ -515,11 +528,12 @@
                 // Add altitude decorations
 
                 // Add text
+                let lb = $("#linkBudget").children("option:selected").val();
                 $("#pathInfo").html(
                     "<strong>Distance</strong>: " + data.distance_m.toFixed(0) + "m <br />" +
                     "<strong>DB Loss</strong>: " + data.dbloss.toFixed(0) + " dB <br />" +
                     "<strong>Mode</strong>: " + data.mode + "<br />" +
-                    "<strong>Approx RSSI</strong>: " + (69.0 - data.dbloss).toFixed(0)
+                    "<strong>Approx RSSI</strong>: " + (lb - data.dbloss).toFixed(0)
                 );
             });
         }

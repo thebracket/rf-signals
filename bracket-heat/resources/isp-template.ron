@@ -6,6 +6,19 @@ Wisp(
     srtm_path: "z:/lidarserver/terrain",
     lidar_path: "z:/lidarserver/terrain/lidar",
 
+    link_budgets: [
+        LinkBudget(
+            name: "Medusa + 450b HG",
+            xmit_eirp: 49.0,
+            receive_gain: 20.0
+        ),
+        LinkBudget(
+            name: "UBNT 120° Sector + PowerBeam 400",
+            xmit_eirp: 44.0,
+            receive_gain: 25.0
+        ),
+    ],
+
     towers: [
         Tower(
             name: "Paquin",

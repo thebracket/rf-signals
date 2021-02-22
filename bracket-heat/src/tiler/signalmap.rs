@@ -23,6 +23,7 @@ pub fn signalmap_tile(
     cpe_height: f64,
     frequency: f64,
     srtm_path: &str,
+    link_budget: f64
 ) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
     let wisp_reader = WISP.read();
@@ -70,7 +71,7 @@ pub fn signalmap_tile(
             .min_by(|a, b| a.partial_cmp(b).unwrap())
             .unwrap_or(400.0);
 
-        let temporary_link_budget = 49.0 + 20.0 - dbloss;
+        let temporary_link_budget = link_budget - dbloss;
         if temporary_link_budget > -90.0 {
             //println!("Link budget: {}", temporary_link_budget);
             let color = ramp(&temporary_link_budget);
