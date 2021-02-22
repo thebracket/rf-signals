@@ -431,13 +431,15 @@
         }
 
         function getTowerLOS() {
-            let towerId = $("#clickTowerList").find('option:selected').val();
-            console.log(towerId);
+            let towerName = $("#clickTowerList").find('option:selected').text();
+            towerName = towerName.substring(0, towerName.lastIndexOf(", "));
+            //console.log(towerName);
+            let towerId = findTower(towerName);
             $("#losplot").html("<span style='color: white; font-size: 32pt'>Loading - please wait</span>");
             let h = $("#cpeHeight").val();
             let frequency = $("#freq").children("option:selected").val();
-            $.get("/losplot/" + clickLat + "/" + clickLon + "/" + towerId + "/" + h + "/" + frequency, (data) => {
-                console.log(data);
+            $.get("/losplot/" + clickLat + "/" + clickLon + "/" + towerName + "/" + h + "/" + frequency, (data) => {
+                //console.log(data);
 
                 // Min/max height for scaling
                 var minHeight = 10000;
@@ -484,7 +486,7 @@
                 ctx.strokeStyle = "#AAA";
                 for (var y=minHeight; y<maxHeight; y += 1.0) {
                     var n = Math.floor(y) % 10.0;
-                    console.log(n);
+                    //console.log(n);
                     if (n == 0) {
                         ctx.beginPath();
                         ctx.moveTo(0, height - ((y - minHeight) * yScale));

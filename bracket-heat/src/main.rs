@@ -124,14 +124,22 @@ fn map_click<'a>(
     ))
 }
 
-#[get("/losplot/<lat>/<lon>/<tower_index>/<cpe_height>/<frequency>")]
+#[get("/losplot/<lat>/<lon>/<tower_name>/<cpe_height>/<frequency>")]
 fn los_plot<'a>(
     lat: f64,
     lon: f64,
-    tower_index: usize,
+    tower_name: String,
     cpe_height: f64,
     frequency: f64,
 ) -> Json<los::LineOfSightPlot> {
+    let tower_index = WISP
+        .read()
+        .towers
+        .iter()
+        .enumerate()
+        .find(|(i, t)| t.name == tower_name)
+        .map(|(i, _)| i)
+        .unwrap();
     let srtm_path = WISP.read().srtm_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::los_plot(
