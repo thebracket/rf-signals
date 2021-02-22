@@ -92,6 +92,7 @@
         <select id="clickTowerList"></select>
         <br />
         <div id="losplot" style="width: 100%; height: 95%; overflow-x: scroll; background-color: #555;"></div>
+        <div id="pathInfo" style="position: relative; left: 50px; bottom: 150px; height: 50px; width: 200px; background-color: #eee; opacity: 0.8; font-size: 8pt;"></div>
         <div style="position: absolute; left: 95%; top: 95%; width: 200px; height: 25px;">
             <button onclick='losExplorerVisible = false; $("#ClickInfo").hide(); $("#losplot").empty();' style="background-color: red;">Close</button>
         </div>
@@ -453,6 +454,23 @@
                 var altitudeStep = (endAltitude - startAltitude) / data.srtm.length;
                 var currentAltitude = startAltitude;
 
+                // Draw altitude lines
+                ctx.strokeStyle = "#AAA";
+                for (var y=minHeight; y<maxHeight; y += 1.0) {
+                    var n = Math.floor(y) % 10.0;
+                    console.log(n);
+                    if (n == 0) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, height - ((y - minHeight) * yScale));
+                        ctx.lineTo(data.srtm.length + 25, height - ((y - minHeight) * yScale));
+                        ctx.stroke();
+
+                        ctx.font = "10px Arial";
+                        ctx.fillStyle = "#FFF";
+                        ctx.fillText(y.toFixed(0) + " m", 1, height - ((y - minHeight) * yScale));
+                    }
+                }
+
                 for (var i=0; i<data.srtm.length; i++) {
                     var x = i + 20;
                     var terrain = (data.srtm[i] - minHeight) * yScale;
@@ -497,12 +515,12 @@
                 // Add altitude decorations
 
                 // Add text
-                ctx.font = "12pt Arial";
-                ctx.fillStyle = "#000000";
-                ctx.fillText("Distance: " + data.distance_m.toFixed(0) + "m", 10, 20);
-                ctx.fillText("DB Loss: " + data.dbloss.toFixed(0) + " dB", 10, 40);
-                ctx.fillText("Mode: " + data.mode, 10, 60);
-                ctx.fillText("Approx RSSI (Medusa): " + (69.0 - data.dbloss).toFixed(0), 10, 80);
+                $("#pathInfo").html(
+                    "<strong>Distance</strong>: " + data.distance_m.toFixed(0) + "m <br />" +
+                    "<strong>DB Loss</strong>: " + data.dbloss.toFixed(0) + " dB <br />" +
+                    "<strong>Mode</strong>: " + data.mode + "<br />" +
+                    "<strong>Approx RSSI</strong>: " + (69.0 - data.dbloss).toFixed(0)
+                );
             });
         }
 
