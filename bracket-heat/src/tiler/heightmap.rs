@@ -8,14 +8,14 @@ use rf_signal_algorithms::{
     LatLon,
 };
 
-pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, srtm_path: &str) -> Vec<u8> {
+pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, heat_path: &str) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
 
     let points = lat_lon_tile(swlat, swlon, nelat, nelon, TILE_SIZE as usize);
-    let heights = height_tile_elevations(&points, srtm_path);
+    let heights = height_tile_elevations(&points, heat_path);
 
-    let min_height = heights.iter().filter(|a| **a > 0).min().unwrap();
-    let max_height = heights.iter().max().unwrap();
+    let min_height = heights.iter().filter(|a| **a > 0).min().unwrap_or(&0);
+    let max_height = heights.iter().max().unwrap_or(&1);
     let h_scale = 255.0 / (*max_height as f64 - *min_height as f64);
 
     heights.iter().enumerate().for_each(|(i, h)| {

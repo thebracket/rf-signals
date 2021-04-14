@@ -1,8 +1,8 @@
 use crate::WISP;
 use rf_signal_algorithms::{
-    free_space_path_loss_db, geometry::haversine_distance, has_line_of_sight, itwom_point_to_point,
-    lat_lon_path_1m, lat_lon_vec_to_heights, lidar::lidar_elevation, srtm::get_altitude, Distance,
-    Frequency, LatLon, PTPClimate, PTPPath,
+    bheat::heat_altitude, free_space_path_loss_db, geometry::haversine_distance, has_line_of_sight,
+    itwom_point_to_point, lat_lon_path_1m, lat_lon_vec_to_heights, Distance, Frequency, LatLon,
+    PTPClimate, PTPPath,
 };
 use serde::{Deserialize, Serialize};
 
@@ -27,7 +27,7 @@ pub fn evaluate_tower_click(
     pos: &LatLon,
     frequency: Frequency,
     cpe_height: f64,
-    srtm_path: &str,
+    heat_path: &str,
     link_budget: f64,
 ) -> ClickSite {
     let reader = WISP.read();
@@ -39,11 +39,12 @@ pub fn evaluate_tower_click(
             haversine_distance(pos, &LatLon::new(t.lat, t.lon)).as_km() < t.max_range_km
         })
         .map(|(i, t)| {
-            let base_tower_height = get_altitude(&LatLon::new(t.lat, t.lon), srtm_path)
-                .unwrap_or(Distance::with_meters(0.0))
+            let base_tower_height = heat_altitude(t.lat, t.lon, heat_path)
+                .unwrap_or((Distance::with_meters(0.0), Distance::with_meters(0.0)))
+                .0
                 .as_meters();
             let path = lat_lon_path_1m(&LatLon::new(t.lat, t.lon), pos);
-            let los_path = lat_lon_vec_to_heights(&path, srtm_path);
+            let los_path = lat_lon_vec_to_heights(&path, heat_path);
             let d = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
             let (dbloss, mode) = {
                 let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
@@ -82,9 +83,11 @@ pub fn evaluate_tower_click(
         })
         .collect();
 
+    let h = heat_altitude(pos.lat(), pos.lon(), heat_path)
+        .unwrap_or((Distance::with_meters(0), Distance::with_meters(0)));
     ClickSite {
-        base_height_m: get_altitude(pos, srtm_path).unwrap().as_meters(),
-        lidar_height_m: lidar_elevation(pos),
+        base_height_m: h.0.as_meters(),
+        lidar_height_m: h.1.as_meters(),
         towers,
     }
 }

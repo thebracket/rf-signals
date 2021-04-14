@@ -1,0 +1,15 @@
+[package]
+name = "terrain_cooker"
+version = "0.1.0"
+authors = ["herbert"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+las = "0.7"
+proj = "0.22"
+geo-types = "0.7"
+bytemuck = "1.4"
+image = "0.23"
+rf-signal-algorithms = { path = "../rf-signal-algorithms" }

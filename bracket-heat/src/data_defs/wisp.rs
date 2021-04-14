@@ -10,8 +10,7 @@ pub struct Wisp {
     pub center: (f64, f64),
     pub map_zoom: u32,
     pub towers: Vec<Tower>,
-    pub srtm_path: String,
-    pub lidar_path: String,
+    pub heat_path: String,
     pub link_budgets: Vec<LinkBudget>,
 }
 

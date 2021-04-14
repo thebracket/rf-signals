@@ -1,12 +1,9 @@
 pub mod latlon;
 pub mod srtm;
 pub use latlon::LatLon;
-use lazy_static::*;
-use lidar::lidar_elevation;
-use lru::LruCache;
-use parking_lot::Mutex;
+pub mod bheat;
+use bheat::heat_altitude;
 use rayon::prelude::*;
-use srtm::get_altitude;
 
 use crate::{
     geometry::{haversine_distance, haversine_intermediate},
@@ -42,32 +39,19 @@ pub fn lat_lon_tile(
     points
 }
 
-lazy_static! {
-    static ref POINT_CACHE: Mutex<LruCache<(i32, i32), u16>> = Mutex::new(LruCache::new(1_000_000));
+fn highest_altitude(point: &LatLon, heat_path: &str) -> u16 {
+    let altitudes = heat_altitude(point.lat(), point.lon(), heat_path)
+        .unwrap_or((Distance::with_meters(0.0), Distance::with_meters(0.0)));
+    u16::max(
+        altitudes.0.as_meters() as u16,
+        altitudes.1.as_meters() as u16,
+    )
 }
 
-fn highest_altitude(point: &LatLon, srtm_path: &str) -> u16 {
-    let cache_index = point.to_cache_tuple();
-
-    let mut cache_lock = POINT_CACHE.lock();
-    let cache_point = cache_lock.get(&cache_index);
-    if let Some(cp) = cache_point {
-        return *cp;
-    }
-    let h = u16::max(
-        get_altitude(point, &srtm_path)
-            .unwrap_or(Distance::with_meters(0))
-            .as_meters() as u16,
-        lidar_elevation(point) as u16,
-    );
-    cache_lock.put(cache_index, h);
-    h
-}
-
-pub fn height_tile_elevations(points: &[(u32, u32, LatLon)], srtm_path: &str) -> Vec<u16> {
+pub fn height_tile_elevations(points: &[(u32, u32, LatLon)], heat_path: &str) -> Vec<u16> {
     points
         .par_iter()
-        .map(|(_, _, point)| highest_altitude(point, srtm_path))
+        .map(|(_, _, point)| highest_altitude(point, heat_path))
         .collect()
 }
 
@@ -97,10 +81,10 @@ pub fn lat_lon_path_1m(src: &LatLon, dst: &LatLon) -> Vec<LatLon> {
     path
 }
 
-pub fn lat_lon_vec_to_heights(points: &[LatLon], srtm_path: &str) -> Vec<u16> {
+pub fn lat_lon_vec_to_heights(points: &[LatLon], heat_path: &str) -> Vec<u16> {
     points
         .par_iter()
-        .map(|point| highest_altitude(point, srtm_path))
+        .map(|point| highest_altitude(point, heat_path))
         .collect()
 }
 

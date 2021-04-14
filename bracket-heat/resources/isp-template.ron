@@ -3,8 +3,7 @@ Wisp(
     name: "iZones LLC",
     center: (38.947775, -92.323385),
     map_zoom: 10,
-    srtm_path: "z:/lidarserver/terrain",
-    lidar_path: "z:/lidarserver/terrain/lidar",
+    heat_path: "z:/bheat",
 
     link_budgets: [
         LinkBudget(

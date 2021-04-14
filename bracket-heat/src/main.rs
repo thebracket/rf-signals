@@ -54,8 +54,8 @@ fn budgets() -> Json<Vec<LinkBudget>> {
 
 #[get("/heightmap/<swlat>/<swlon>/<nelat>/<nelon>")]
 fn heightmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
-    let srtm_path = WISP.read().srtm_path.clone();
-    let image_buffer = tiler::heightmap_tile(swlat, swlon, nelat, nelon, &srtm_path);
+    let heat_path = WISP.read().heat_path.clone();
+    let image_buffer = tiler::heightmap_tile(swlat, swlon, nelat, nelon, &heat_path);
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
     response_build.status(Status::Ok);
@@ -65,8 +65,8 @@ fn heightmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a>
 
 #[get("/losmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>")]
 fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -> Response<'a> {
-    let srtm_path = WISP.read().srtm_path.clone();
-    let image_buffer = tiler::losmap_tile(swlat, swlon, nelat, nelon, cpe_height, &srtm_path);
+    let heat_path = WISP.read().heat_path.clone();
+    let image_buffer = tiler::losmap_tile(swlat, swlon, nelat, nelon, cpe_height, &heat_path);
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
     response_build.status(Status::Ok);
@@ -84,7 +84,7 @@ fn signalmap<'a>(
     frequency: f64,
     link_budget: f64,
 ) -> Response<'a> {
-    let srtm_path = WISP.read().srtm_path.clone();
+    let heat_path = WISP.read().heat_path.clone();
     let image_buffer = tiler::signalmap_tile(
         swlat,
         swlon,
@@ -92,7 +92,7 @@ fn signalmap<'a>(
         nelon,
         cpe_height,
         frequency,
-        &srtm_path,
+        &heat_path,
         link_budget,
     );
     let mut response_build = Response::build();
@@ -113,13 +113,13 @@ fn map_click<'a>(
     cpe_height: f64,
     link_budget: f64,
 ) -> Json<los::ClickSite> {
-    let srtm_path = WISP.read().srtm_path.clone();
+    let heat_path = WISP.read().heat_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::evaluate_tower_click(
         &pos,
         Frequency::with_ghz(frequency),
         cpe_height,
-        &srtm_path,
+        &heat_path,
         link_budget,
     ))
 }
@@ -140,14 +140,14 @@ fn los_plot<'a>(
         .find(|(i, t)| t.name == tower_name)
         .map(|(i, _)| i)
         .unwrap();
-    let srtm_path = WISP.read().srtm_path.clone();
+    let heat_path = WISP.read().heat_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::los_plot(
         &pos,
         tower_index,
         cpe_height,
         Frequency::with_ghz(frequency),
-        &srtm_path,
+        &heat_path,
     ))
 }
 
@@ -162,9 +162,6 @@ fn main() {
         .replace("_CENTER_LON_", &wisp_def.center.1.to_string())
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
         .replace("_ISP_NAME_", &format!("\"{}\"", &wisp_def.name));
-
-    println!("Indexing LiDAR Data - Please Wait");
-    rf_signal_algorithms::lidar::index_all_lidar(&wisp_def.lidar_path);
 
     let config = Config::build(Environment::Production)
         .port(wisp_def.listen_port)

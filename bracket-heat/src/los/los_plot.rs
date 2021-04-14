@@ -1,8 +1,8 @@
 use crate::WISP;
 use rf_signal_algorithms::{
-    free_space_path_loss_db, fresnel_radius, geometry::haversine_distance, has_line_of_sight,
-    itwom_point_to_point, lat_lon_path_1m, lat_lon_vec_to_heights, lidar::lidar_elevation,
-    srtm::get_altitude, Distance, Frequency, LatLon, PTPClimate, PTPPath,
+    bheat::heat_altitude, free_space_path_loss_db, fresnel_radius, geometry::haversine_distance,
+    has_line_of_sight, itwom_point_to_point, lat_lon_path_1m, lat_lon_vec_to_heights, Distance,
+    Frequency, LatLon, PTPClimate, PTPPath,
 };
 use serde::{Deserialize, Serialize};
 
@@ -22,18 +22,19 @@ pub fn los_plot(
     tower_index: usize,
     cpe_height: f64,
     frequency: Frequency,
-    srtm_path: &str,
+    heat_path: &str,
 ) -> LineOfSightPlot {
     let reader = crate::WISP.read();
     let t = &reader.towers[tower_index];
     let d = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
-    let base_tower_height = get_altitude(&LatLon::new(t.lat, t.lon), srtm_path)
-        .unwrap_or(Distance::with_meters(0.0))
+    let base_tower_height = heat_altitude(t.lat, t.lon, heat_path)
+        .unwrap_or((Distance::with_meters(0.0), Distance::with_meters(0.0)))
+        .0
         .as_meters();
     let path = lat_lon_path_1m(&LatLon::new(t.lat, t.lon), pos); // Tower is 1st
 
     // Calculate the LoS and loss - should be cached data
-    let los_path = lat_lon_vec_to_heights(&path, srtm_path);
+    let los_path = lat_lon_vec_to_heights(&path, heat_path);
     let (dbloss, mode) = {
         let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
         let path_len = path_as_distances.len();
@@ -65,12 +66,10 @@ pub fn los_plot(
 
     let mut walker = 0.0;
     path.iter().for_each(|loc| {
-        srtm.push(
-            get_altitude(loc, srtm_path)
-                .unwrap_or(Distance::with_meters(0))
-                .as_meters(),
-        );
-        lidar.push(lidar_elevation(loc));
+        let h = heat_altitude(loc.lat(), loc.lon(), heat_path)
+            .unwrap_or((Distance::with_meters(0), Distance::with_meters(0)));
+        srtm.push(h.0.as_meters());
+        lidar.push(h.1.as_meters());
         fresnel.push(fresnel_radius(walker, d.as_meters() - walker, frequency.as_mhz()) * 0.6);
         walker += 1.0;
     });

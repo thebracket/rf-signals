@@ -5,11 +5,9 @@ use std::io::{Cursor, Seek, SeekFrom};
 
 use crate::WISP;
 use rf_signal_algorithms::{
+    bheat::heat_altitude,
     geometry::{haversine_distance, haversine_intermediate},
-    has_line_of_sight, lat_lon_path_10m, lat_lon_tile, lat_lon_vec_to_heights,
-    lidar::lidar_elevation,
-    srtm::get_altitude,
-    Distance, LatLon,
+    has_line_of_sight, lat_lon_path_10m, lat_lon_tile, lat_lon_vec_to_heights, Distance, LatLon,
 };
 use rocket::http::ext;
 
@@ -19,7 +17,7 @@ pub fn losmap_tile(
     nelat: f64,
     nelon: f64,
     cpe_height: f64,
-    srtm_path: &str,
+    heat_path: &str,
 ) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
     let wisp_reader = WISP.read();
@@ -31,11 +29,12 @@ pub fn losmap_tile(
             .iter()
             .filter(|t| haversine_distance(p, &LatLon::new(t.lat, t.lon)).as_km() < t.max_range_km)
             .map(|t| {
-                let base_tower_height = get_altitude(&LatLon::new(t.lat, t.lon), srtm_path)
-                    .unwrap_or(Distance::with_meters(0.0))
+                let base_tower_height = heat_altitude(t.lat, t.lon, heat_path)
+                    .unwrap_or((Distance::with_meters(0.0), Distance::with_meters(0.0)))
+                    .0
                     .as_meters();
                 let path = lat_lon_path_10m(p, &LatLon::new(t.lat, t.lon));
-                let los_path = lat_lon_vec_to_heights(&path, srtm_path);
+                let los_path = lat_lon_vec_to_heights(&path, heat_path);
                 has_line_of_sight(
                     &los_path,
                     Distance::with_meters(cpe_height),

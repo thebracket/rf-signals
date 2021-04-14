@@ -115,6 +115,7 @@
         let clickLat = 0.0;
         let clickLon = 0.0;
         let losExplorerVisible = false;
+        let clickPos = null;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -132,6 +133,7 @@
             });
             map.addListener("click", (mapsMouseEvent) => {
                 let pos = mapsMouseEvent.latLng;
+                clickPos = mapsMouseEvent;
                 // Add a marker
                 if (currentMarker != null) {
                     currentMarker.setMap(null);
@@ -238,12 +240,18 @@
             });
 
             $("#clickTowerList").change(() => {
-                getTowerLOS();
+                if (losExplorerVisible) {
+                    getTowerLOS();
+                }
             });
 
             $("#cpeHeight").change(() => {
                 if (losExplorerVisible) {
                     getTowerLOS();
+                }
+                console.log(clickPos);
+                if (clickPos != null) {
+                    map.click(clickPos);
                 }
             });
             $("#freq").change(() => {
@@ -577,6 +585,7 @@
         }
 
         function clear_lines() {
+            clickPos = null;
             if (currentMarker != null) {
                 currentMarker.setMap(null);
                 currentMarker = null;
