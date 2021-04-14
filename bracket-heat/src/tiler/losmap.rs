@@ -5,11 +5,9 @@ use std::io::{Cursor, Seek, SeekFrom};
 
 use crate::WISP;
 use rf_signal_algorithms::{
-    bheat::heat_altitude,
-    geometry::{haversine_distance, haversine_intermediate},
-    has_line_of_sight, lat_lon_path_10m, lat_lon_tile, lat_lon_vec_to_heights, Distance, LatLon,
+    bheat::heat_altitude, geometry::haversine_distance, has_line_of_sight, lat_lon_path_10m,
+    lat_lon_tile, lat_lon_vec_to_heights, Distance, LatLon,
 };
-use rocket::http::ext;
 
 pub fn losmap_tile(
     swlat: f64,
@@ -64,7 +62,7 @@ pub fn losmap_tile(
         writer.write_image_data(&image_data).unwrap();
     }
     let mut out = Vec::new();
-    w.seek(SeekFrom::Start(0));
+    w.seek(SeekFrom::Start(0)).unwrap();
     w.read_to_end(&mut out).unwrap();
     out
 }

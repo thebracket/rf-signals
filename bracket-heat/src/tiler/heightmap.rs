@@ -3,10 +3,7 @@ pub(crate) const TILE_SIZE: u32 = 256;
 use std::io::Read;
 use std::io::{Cursor, Seek, SeekFrom};
 
-use rf_signal_algorithms::{
-    height_tile_elevations, lat_lon_tile, lidar::lidar_elevation, srtm::get_altitude, Distance,
-    LatLon,
-};
+use rf_signal_algorithms::{height_tile_elevations, lat_lon_tile};
 
 pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, heat_path: &str) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
@@ -41,7 +38,7 @@ pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, heat_path:
         writer.write_image_data(&image_data).unwrap();
     }
     let mut out = Vec::new();
-    w.seek(SeekFrom::Start(0));
+    w.seek(SeekFrom::Start(0)).unwrap();
     w.read_to_end(&mut out).unwrap();
     out
 }

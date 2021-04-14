@@ -1,8 +1,6 @@
-use crate::WISP;
 use rf_signal_algorithms::{
-    bheat::heat_altitude, free_space_path_loss_db, fresnel_radius, geometry::haversine_distance,
-    has_line_of_sight, itwom_point_to_point, lat_lon_path_1m, lat_lon_vec_to_heights, Distance,
-    Frequency, LatLon, PTPClimate, PTPPath,
+    bheat::heat_altitude, fresnel_radius, geometry::haversine_distance, itwom_point_to_point,
+    lat_lon_path_1m, lat_lon_vec_to_heights, Distance, Frequency, LatLon, PTPClimate, PTPPath,
 };
 use serde::{Deserialize, Serialize};
 
@@ -37,7 +35,6 @@ pub fn los_plot(
     let los_path = lat_lon_vec_to_heights(&path, heat_path);
     let (dbloss, mode) = {
         let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
-        let path_len = path_as_distances.len();
         path_as_distances[0] = base_tower_height;
         let mut terrain_path = PTPPath::new(
             path_as_distances,

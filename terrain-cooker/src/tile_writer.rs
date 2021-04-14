@@ -1,8 +1,8 @@
+use rf_signal_algorithms::srtm::get_altitude;
+use rf_signal_algorithms::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use rf_signal_algorithms::*;
-use rf_signal_algorithms::srtm::get_altitude;
 
 const ROW_SIZE: usize = 768;
 const COL_SIZE: usize = 768;
@@ -45,11 +45,10 @@ impl MapTile {
             for idx in 0..(NUM_CELLS) {
                 let (plat, plon) = tile.coords(idx, lat, lon);
                 let ll = LatLon::new(plat, plon);
-                let h = get_altitude(
-                    &ll,
-                    "/home/herbert/lidarserver/terrain"
-                ).unwrap_or(Distance::with_meters(0)).as_meters();
-                tile.heights[idx*2] = (h * 10.0) as u16;
+                let h = get_altitude(&ll, "/home/herbert/lidarserver/terrain")
+                    .unwrap_or(Distance::with_meters(0))
+                    .as_meters();
+                tile.heights[idx * 2] = (h * 10.0) as u16;
             }
             tile.save();
             tile
@@ -77,14 +76,14 @@ impl MapTile {
     }
 
     pub fn store_ground(&mut self, index: usize, altitude: u16) {
-        if self.heights[index*2] < altitude {
-            self.heights[index*2] = altitude;
+        if self.heights[index * 2] < altitude {
+            self.heights[index * 2] = altitude;
         }
     }
 
     pub fn store_clutter(&mut self, index: usize, altitude: u16) {
-        if self.heights[(index*2)+1] < altitude {
-            self.heights[(index*2)+1] = altitude;
+        if self.heights[(index * 2) + 1] < altitude {
+            self.heights[(index * 2) + 1] = altitude;
         }
     }
 
@@ -125,20 +124,12 @@ impl MapTile {
         let mut imgbuf = image::ImageBuffer::new(COL_SIZE as u32, ROW_SIZE as u32);
         for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
             let index = (y as usize * ROW_SIZE) + x as usize;
-            let h = self.heights[index*2] / 10;
-            let h2 = self.heights[(index*2)+1] / 10;
+            let h = self.heights[index * 2] / 10;
+            let h2 = self.heights[(index * 2) + 1] / 10;
             let shade_f = (h - t_min_height_m) as f32 / t_span as f32;
-            let mut shade = if h > 0 {
-                (255.0 * shade_f) as u8
-            } else {
-                0
-            };
+            let mut shade = if h > 0 { (255.0 * shade_f) as u8 } else { 0 };
             let shade2_f = (h2 - c_min_height_m) as f32 / c_span as f32;
-            let shade2 = if h2>0 {
-                (255.0 * shade2_f) as u8
-            } else {
-                0
-            };
+            let shade2 = if h2 > 0 { (255.0 * shade2_f) as u8 } else { 0 };
 
             shade = u8::max(shade, shade2);
 
@@ -167,17 +158,9 @@ impl MapTile {
         let lon_step = (1.0 / COL_SIZE as f64) / 100.0;
         let lon_pos = base_lon + (lon_step * col as f64);
 
-        let lat_final = if lat < 0.0 {
-            lat_pos * -1.0
-        } else {
-            lat_pos
-        };
+        let lat_final = if lat < 0.0 { lat_pos * -1.0 } else { lat_pos };
 
-        let lon_final = if lon < 0.0 {
-            lon_pos * -1.0
-        } else {
-            lon_pos
-        };
+        let lon_final = if lon < 0.0 { lon_pos * -1.0 } else { lon_pos };
 
         (lat_final, lon_final)
     }

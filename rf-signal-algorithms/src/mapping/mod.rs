@@ -9,7 +9,6 @@ use crate::{
     geometry::{haversine_distance, haversine_intermediate},
     Distance,
 };
-pub mod lidar;
 
 /// Create a grid of LatLon entries for a bounded tile, returning (x, y, LatLon).
 /// Used as a starting point for creating map tiles.

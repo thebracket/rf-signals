@@ -2,10 +2,10 @@ use geo_types::Point;
 use las::{point::Classification, Header, Read, Reader};
 use proj::*;
 mod tile_writer;
+use rf_signal_algorithms::srtm::get_altitude;
+use rf_signal_algorithms::*;
 use std::{collections::HashMap, fs::read_dir, path::Path};
 use tile_writer::*;
-use rf_signal_algorithms::*;
-use rf_signal_algorithms::srtm::get_altitude;
 
 const LIDAR_PATH: &str = "/home/herbert/lidar/";
 
@@ -55,7 +55,6 @@ fn main() {
                 let projection = get_projection_string(reader.header()).unwrap();
                 let to = "WGS84";
                 let converter = Proj::new_known_crs(&projection, &to, None).unwrap();
-
 
                 let mut tile_cache = HashMap::<String, MapTile>::new();
 

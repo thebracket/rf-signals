@@ -1,8 +1,7 @@
 use crate::WISP;
 use rf_signal_algorithms::{
-    bheat::heat_altitude, free_space_path_loss_db, geometry::haversine_distance, has_line_of_sight,
-    itwom_point_to_point, lat_lon_path_1m, lat_lon_vec_to_heights, Distance, Frequency, LatLon,
-    PTPClimate, PTPPath,
+    bheat::heat_altitude, geometry::haversine_distance, itwom_point_to_point, lat_lon_path_1m,
+    lat_lon_vec_to_heights, Distance, Frequency, LatLon, PTPClimate, PTPPath,
 };
 use serde::{Deserialize, Serialize};
 
@@ -38,7 +37,7 @@ pub fn evaluate_tower_click(
         .filter(|(_, t)| {
             haversine_distance(pos, &LatLon::new(t.lat, t.lon)).as_km() < t.max_range_km
         })
-        .map(|(i, t)| {
+        .map(|(_i, t)| {
             let base_tower_height = heat_altitude(t.lat, t.lon, heat_path)
                 .unwrap_or((Distance::with_meters(0.0), Distance::with_meters(0.0)))
                 .0
@@ -48,7 +47,6 @@ pub fn evaluate_tower_click(
             let d = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
             let (dbloss, mode) = {
                 let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
-                let path_len = path_as_distances.len();
                 path_as_distances[0] = base_tower_height;
                 let mut terrain_path = PTPPath::new(
                     path_as_distances,

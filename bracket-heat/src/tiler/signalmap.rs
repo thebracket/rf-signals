@@ -5,13 +5,10 @@ use std::io::{Cursor, Seek, SeekFrom};
 
 use crate::WISP;
 use rf_signal_algorithms::{
-    bheat::heat_altitude,
-    free_space_path_loss_db,
-    geometry::{haversine_distance, haversine_intermediate},
-    has_line_of_sight, itwom_point_to_point, lat_lon_path_10m, lat_lon_tile,
-    lat_lon_vec_to_heights, Distance, Frequency, LatLon, PTPClimate, PTPPath,
+    bheat::heat_altitude, free_space_path_loss_db, geometry::haversine_distance,
+    itwom_point_to_point, lat_lon_path_10m, lat_lon_tile, lat_lon_vec_to_heights, Distance,
+    Frequency, LatLon, PTPClimate, PTPPath,
 };
-use rocket::http::ext;
 
 pub fn signalmap_tile(
     swlat: f64,
@@ -45,7 +42,6 @@ pub fn signalmap_tile(
                 } else {
                     let mut path_as_distances: Vec<f64> =
                         los_path.iter().map(|d| *d as f64).collect();
-                    let path_len = path_as_distances.len();
                     path_as_distances[0] = base_tower_height;
                     let mut terrain_path = PTPPath::new(
                         path_as_distances,
@@ -92,7 +88,7 @@ pub fn signalmap_tile(
         writer.write_image_data(&image_data).unwrap();
     }
     let mut out = Vec::new();
-    w.seek(SeekFrom::Start(0));
+    w.seek(SeekFrom::Start(0)).unwrap();
     w.read_to_end(&mut out).unwrap();
     out
 }

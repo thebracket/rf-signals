@@ -11,10 +11,6 @@ pub mod srtm {
     pub use crate::mapping::srtm::*;
 }
 
-pub mod lidar {
-    pub use crate::mapping::lidar::*;
-}
-
 pub mod bheat {
     pub use crate::mapping::bheat::*;
 }

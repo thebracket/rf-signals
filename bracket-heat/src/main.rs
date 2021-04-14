@@ -137,7 +137,7 @@ fn los_plot<'a>(
         .towers
         .iter()
         .enumerate()
-        .find(|(i, t)| t.name == tower_name)
+        .find(|(_i, t)| t.name == tower_name)
         .map(|(i, _)| i)
         .unwrap();
     let heat_path = WISP.read().heat_path.clone();
