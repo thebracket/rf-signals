@@ -1,16 +1,7 @@
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
-
 const ROW_SIZE: usize = 768;
 const COL_SIZE: usize = 768;
-const NUM_CELLS: usize = COL_SIZE * ROW_SIZE;
-const TOTAL_ENTRIES: usize = NUM_CELLS * 2;
 
-pub struct MapTile {
-    filename: String,
-    pub heights: Vec<u16>,
-}
+pub struct MapTile {}
 
 impl MapTile {
     pub fn index(lat: f64, lon: f64) -> usize {
