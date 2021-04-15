@@ -136,7 +136,7 @@ fn map_click<'a>(
     ))
 }
 
-#[get("/3d/<lat>/<lon>", format="json")]
+#[get("/3d/<lat>/<lon>", format = "json")]
 fn tile3d(lat: f64, lon: f64) -> Json<tiler::TerrainBlob> {
     let heat_path = WISP.read().heat_path.clone();
     Json(tiler::build_3d_heightmap(lat, lon, &heat_path))
