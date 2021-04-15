@@ -200,7 +200,7 @@ pub fn signalmap_detail(
         }
     });
 
-    println!("Baking image");
+    //println!("Baking image");
     let mut w = Cursor::new(Vec::new());
     {
         let mut encoder = png::Encoder::new(&mut w, DETAIL_SIZE as _, DETAIL_SIZE as _);
