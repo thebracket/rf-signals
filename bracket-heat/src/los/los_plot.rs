@@ -35,25 +35,29 @@ pub fn los_plot(
     let los_path = lat_lon_vec_to_heights(&path, heat_path);
     let (dbloss, mode) = {
         let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
-        path_as_distances[0] = base_tower_height;
-        let mut terrain_path = PTPPath::new(
-            path_as_distances,
-            Distance::with_meters(t.height_meters),
-            Distance::with_meters(cpe_height),
-            Distance::with_meters(1.0),
-        )
-        .unwrap();
+        if path_as_distances.iter().filter(|h| **h == 0.0).count() > 0 {
+            (0.0, "Missing Data".to_string())
+        } else {
+            path_as_distances[0] = base_tower_height;
+            let mut terrain_path = PTPPath::new(
+                path_as_distances,
+                Distance::with_meters(t.height_meters),
+                Distance::with_meters(cpe_height),
+                Distance::with_meters(1.0),
+            )
+            .unwrap();
 
-        let lr = itwom_point_to_point(
-            &mut terrain_path,
-            PTPClimate::default(),
-            frequency,
-            0.5,
-            0.5,
-            1,
-        );
+            let lr = itwom_point_to_point(
+                &mut terrain_path,
+                PTPClimate::default(),
+                frequency,
+                0.5,
+                0.5,
+                1,
+            );
 
-        (lr.dbloss, format!("{} ({})", lr.mode, lr.error_num))
+            (lr.dbloss, format!("{} ({})", lr.mode, lr.error_num))
+        }
     };
 
     // Expand out the srtm, lidar and fresnel fields

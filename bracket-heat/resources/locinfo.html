@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Location Detail</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
+        <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+		<script>
+            function init(data) {
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+                const renderer = new THREE.WebGLRenderer();
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                document.body.appendChild( renderer.domElement );
+                var controls = new THREE.OrbitControls (camera, renderer.domElement);
+
+                // Make the terrain
+                const material = new THREE.MeshLambertMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
+                var plane = new THREE.PlaneGeometry( 10, 10, data.width-1, data.height-1);
+                var vertices = [];
+                var i = 0;
+                for (var y=0; y<data.height; y++) {
+                    for (var x=0; x<data.width; x++) {
+                        vertices.push(x - (data.width / 2));
+                        vertices.push(data.terrain[i]);
+                        vertices.push(y - (data.height / 2));
+                        i++;
+                    }
+                }
+                plane.setAttribute('position', new THREE.BufferAttribute( new Float32Array(vertices), 3));
+                plane.computeVertexNormals();
+                const mesh = new THREE.Mesh( plane, material );
+                scene.add( mesh );
+
+                // Make the clutter
+                const cmaterial = new THREE.MeshLambertMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+                var cplane = new THREE.PlaneGeometry( 10, 10, data.width-1, data.height-1);
+                var vertices = [];
+                var i = 0;
+                for (var y=0; y<data.height; y++) {
+                    for (var x=0; x<data.width; x++) {
+                        vertices.push(x - (data.width / 2));
+                        vertices.push(data.clutter[i]);
+                        vertices.push(y - (data.height / 2));
+                        i++;
+                    }
+                }
+                cplane.setAttribute('position', new THREE.BufferAttribute( new Float32Array(vertices), 3));
+                cplane.computeVertexNormals();
+                const cmesh = new THREE.Mesh( cplane, cmaterial );
+                scene.add( cmesh );
+
+                const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+                directionalLight.position.x = 0.5;
+                directionalLight.position.y = 1;
+                directionalLight.position.z = 0.5;
+                scene.add( directionalLight );
+
+                camera.position.z = 10.0;
+
+                function animate() {
+                    controls.update();
+                    requestAnimationFrame( animate );
+                    renderer.render( scene, camera );
+                }
+                animate();
+            }
+
+            $.get("/3d/38.947775/-92.323385", (data) => {
+                console.log(data);
+                init(data);
+            });
+		</script>
+	</body>
+</html>

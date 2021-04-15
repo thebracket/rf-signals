@@ -47,25 +47,29 @@ pub fn evaluate_tower_click(
             let d = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
             let (dbloss, mode) = {
                 let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
-                path_as_distances[0] = base_tower_height;
-                let mut terrain_path = PTPPath::new(
-                    path_as_distances,
-                    Distance::with_meters(t.height_meters),
-                    Distance::with_meters(cpe_height),
-                    Distance::with_meters(1.0),
-                )
-                .unwrap();
+                if path_as_distances.iter().filter(|h| **h == 0.0).count() > 0 {
+                    (0.0, "Missing Data".to_string())
+                } else {
+                    path_as_distances[0] = base_tower_height;
+                    let mut terrain_path = PTPPath::new(
+                        path_as_distances,
+                        Distance::with_meters(t.height_meters),
+                        Distance::with_meters(cpe_height),
+                        Distance::with_meters(1.0),
+                    )
+                    .unwrap();
 
-                let lr = itwom_point_to_point(
-                    &mut terrain_path,
-                    PTPClimate::default(),
-                    frequency,
-                    0.5,
-                    0.5,
-                    1,
-                );
+                    let lr = itwom_point_to_point(
+                        &mut terrain_path,
+                        PTPClimate::default(),
+                        frequency,
+                        0.5,
+                        0.5,
+                        1,
+                    );
 
-                (lr.dbloss, lr.mode)
+                    (lr.dbloss, lr.mode)
+                }
             };
 
             let temporary_link_budget = link_budget - dbloss;

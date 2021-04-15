@@ -30,6 +30,18 @@ fn index() -> content::Html<String> {
     content::Html(INDEX_FINAL.read().clone())
 }
 
+#[get("/three.js")]
+fn three_js<'a>() -> rocket::response::Stream<std::fs::File> {
+    use std::fs::File;
+    rocket::response::Stream::from(File::open("resources/three.js").unwrap())
+}
+
+#[get("/locinfo.html")]
+fn loc_info<'a>() -> rocket::response::Stream<std::fs::File> {
+    use std::fs::File;
+    rocket::response::Stream::from(File::open("resources/locinfo.html").unwrap())
+}
+
 #[get("/tower_Marker.png")]
 fn tower_marker<'a>() -> rocket::response::Stream<std::fs::File> {
     use std::fs::File;
@@ -124,6 +136,12 @@ fn map_click<'a>(
     ))
 }
 
+#[get("/3d/<lat>/<lon>", format="json")]
+fn tile3d(lat: f64, lon: f64) -> Json<tiler::TerrainBlob> {
+    let heat_path = WISP.read().heat_path.clone();
+    Json(tiler::build_3d_heightmap(lat, lon, &heat_path))
+}
+
 #[get("/losplot/<lat>/<lon>/<tower_name>/<cpe_height>/<frequency>")]
 fn los_plot<'a>(
     lat: f64,
@@ -183,7 +201,10 @@ fn main() {
                 map_click,
                 pngegg,
                 los_plot,
-                budgets
+                budgets,
+                three_js,
+                loc_info,
+                tile3d,
             ],
         )
         .launch();
