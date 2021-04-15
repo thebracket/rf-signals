@@ -1,0 +1,299 @@
+<!DOCTYPE html> 
+<head>
+    <title>_BANNER_</title>
+    <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        #map {
+            position: relative;
+        }
+        #GroundControl {
+            position: absolute;
+            z-index: 500;
+            left: 200px;
+            top: 10px;
+            width: 650px;
+            height: 120px;
+            background-color: #eee;
+            border: 1px solid black;
+            border-radius: 4px;
+            padding: 4px;
+        }
+
+        #searchBox {
+            left: 80%;
+            top: 10px;
+            width: 300px;
+            z-index: 500;
+            position: absolute;
+        }
+
+        #ClickInfo {
+            display: none;
+            position: absolute;
+            left: 5px;
+            right: 5px;
+            top: 60px;
+            bottom: 5px;
+            background-color: #ddd;
+            border: 1px solid black;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+
+        #thinking {
+            position: absolute;
+            left: 10px;
+            width: 200px;
+            top: 50px;
+            height: 20px;
+            background-color: #aaaaff;
+            border-radius: 4px;
+            z-index: 500;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=_GMAPKEY_&libraries=&v=weekly"></script>
+
+    <div id="map"></div>
+
+    <div id="thinking">Processing - Please Wait</div>
+
+    <div id="GroundControl">
+        <div id="step1" style="display: block">
+            <p>
+                Hi! I'm SignalBot. Please pan/zoom until the target house is towards the center of the view; I've tried to pick a good starting point. 
+                Zoom in as far as you can while still being able to see the building edges.
+            </p>
+            <button id="step1btn" style='background-color: #99ff99;'>I can see the target!</button>
+        </div>
+        <div id="step2" style="display: none">
+            <p>Great! I've put two markers on the screen. Drag them until the rectangle covers the target area.</p>
+            <button id="step2btn" style='background-color: #99ff99;'>The rectangle covers the target</button>
+        </div>
+        <div id="step3" style="display: none">
+            <p>This is how I see the world. If you don't see height gradients, then I probably can't help you.</p>
+            <button id="step3btn" style='background-color: #99ff99;'>I see height data, find service</button>
+        </div>
+        <div id="step4" style="display: none">
+            <p>This may take a moment...</p>
+        </div>
+    </div>
+
+
+    <script>
+        const IspName = _ISP_NAME_;
+        const MapZoomDefault = 22;
+        const urlParams = new URLSearchParams(window.location.search);
+        const CenterLat = parseFloat(urlParams.get('lat'));
+        const CenterLon = parseFloat(urlParams.get('lon'));
+        console.log(CenterLat, CenterLon);
+        const map_center = {lat: CenterLat, lng: CenterLon};
+        let map = null;
+        let mode = "step1";
+        let top_left = null;
+        let bottom_right = null;
+        let target_rect = null;
+        let currentOverlay = null;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: MapZoomDefault,
+                center: map_center,
+                mapTypeId: 'satellite'
+            });
+            map.setTilt(0);
+            $("#netName").text(IspName);
+            loadTowers();
+
+            // Bot Steps
+            $("#step1btn").click(() => {
+                $("#step1").hide();
+                $("#step2").show();
+
+                top_left = new google.maps.Marker({
+                    position: { lat: CenterLat - 0.0001, lng: CenterLon - 0.0001 },
+                    map: map,
+                    draggable: true
+                });
+                google.maps.event.addListener(top_left, 'dragend', () => {
+                    setTargetRectangle();
+                });
+                bottom_right = new google.maps.Marker({
+                    position: { lat: CenterLat + 0.0001, lng: CenterLon + 0.0001 },
+                    map: map,
+                    draggable: true
+                });
+                google.maps.event.addListener(bottom_right, 'dragend', () => {
+                    setTargetRectangle();
+                });
+                setTargetRectangle();
+            });
+
+            $("#step2btn").click(() => {
+                $("#step2").hide();
+                $("#step3").show();
+                let bounds = new google.maps.LatLngBounds(
+                    top_left.getPosition(),
+                    bottom_right.getPosition(),
+                );
+                target_rect.setMap(null);
+                top_left.setMap(null);
+                bottom_right.setMap(null);
+                console.log(bounds);
+                currentOverlay = new HeightOverlay(bounds);
+                currentOverlay.setMap(map);
+            });
+
+            $("#step3btn").click(() => {
+                $("#step3").hide();
+                $("#step4").show();
+                let bounds = new google.maps.LatLngBounds(
+                    top_left.getPosition(),
+                    bottom_right.getPosition(),
+                );
+                currentOverlay.setMap(null);
+                currentOverlay = null;
+                currentOverlay = new SignalOverlay(bounds);
+                currentOverlay.setMap(map);
+            });
+        }
+
+        function setTargetRectangle() {
+            if (target_rect != null) {
+                target_rect.setMap(null);
+                target_rect = null;
+            }
+            target_rect = new google.maps.Rectangle({
+                strokeColor: "#99ff99",
+                strokeOpacity: 0.8,
+                strokeWeight: 1,
+                fillColor: "#99ff99",
+                fillOpacity: 0.35,
+                map: map,
+                bounds: {
+                    north: top_left.getPosition().lat(),
+                    south: bottom_right.getPosition().lat(),
+                    east: bottom_right.getPosition().lng(),
+                    west: top_left.getPosition().lng(),
+                }
+            });
+        }
+
+        function loadTowers() {
+            $.get("/towers", (data) => {
+                for (var i=0; i<data.length; i++) {
+                    data[i].marker = new google.maps.Marker({
+                        position: { lat: data[i].lat, lng: data[i].lon },
+                        map: map,
+                        icon: 'tower_Marker.png',
+                        title: data[i].name
+                    });
+                    data[i].cpeLine = null;
+                    data[i].lineWindow = null;
+                    data[i].id = i;
+                }
+                towerList = data;
+            });
+        }
+
+        class DynamicImageOverlay extends google.maps.OverlayView {
+            constructor(bounds) {
+                super();
+                $("#thinking").show();
+            }
+
+            onAdd() {
+                console.log("Adding layer");
+                this.div = document.createElement("div");
+                this.div.style.borderStyle = "1px solid green";
+                this.div.style.borderWidth = "0px";
+                this.div.style.position = "absolute";
+                //this.div.style.backgroundColor = "#99ff99";
+                // Create the img element and attach it to the div.
+                const img = document.createElement("img");
+                img.src = this.image;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.position = "absolute";
+                img.onload = () => $("#thinking").hide();
+                this.div.appendChild(img);
+                // Add the element to the "overlayLayer" pane.
+                const panes = this.getPanes();
+                panes.overlayLayer.appendChild(this.div);
+            }
+
+            draw() {
+                // We use the south-west and north-east
+                // coordinates of the overlay to peg it to the correct position and size.
+                // To do this, we need to retrieve the projection from the overlay.
+                const overlayProjection = this.getProjection();
+                // Retrieve the south-west and north-east coordinates of this overlay
+                // in LatLngs and convert them to pixel coordinates.
+                // We'll use these coordinates to resize the div.
+                const sw = overlayProjection.fromLatLngToDivPixel(
+                    this.bounds.getSouthWest()
+                );
+                const ne = overlayProjection.fromLatLngToDivPixel(
+                    this.bounds.getNorthEast()
+                );
+
+                // Resize the image's div to fit the indicated dimensions.
+                if (this.div) {
+                    this.div.style.left = sw.x + "px";
+                    this.div.style.top = ne.y + "px";
+                    this.div.style.width = ne.x - sw.x + "px";
+                    this.div.style.height = sw.y - ne.y + "px";
+                }
+            }
+
+            onRemove() {
+                if (this.div) {
+                    this.div.parentNode.removeChild(this.div);
+                    delete this.div;
+                }
+            }
+        }
+
+        class HeightOverlay extends DynamicImageOverlay {
+            constructor(bounds) {
+                super();
+                this.bounds = bounds;
+                let sw = bounds.getSouthWest();
+                let ne = bounds.getNorthEast();
+                let url = "heightmap_detail/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng();
+                this.image = url;
+            }
+        }
+
+        class SignalOverlay extends DynamicImageOverlay {
+            constructor(bounds) {
+                super();
+                this.bounds = bounds;
+                let sw = bounds.getSouthWest();
+                let ne = bounds.getNorthEast();
+                let h = $("#cpeHeight").val();
+                let frequency = $("#freq").children("option:selected").val();
+                let lb = $("#linkBudget").children("option:selected").val();
+                let url = "signalmap_detail/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng();
+                this.image = url;
+            }
+        }
+
+        function findTower(name) {
+            for (i=0; i<towerList.length; i++) {
+                if (towerList[i].name == name) return i;
+            }
+        }
+
+        $(document).ready(initMap);
+    </script>
+</body>

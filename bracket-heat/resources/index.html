@@ -185,7 +185,8 @@
                         "<strong>Lidar (Clutter) Altitude</strong>: " + data.lidar_height_m + " m<br />" +
                         "<strong>Estimated Location Altitude Above Ground</strong>: " + (data.lidar_height_m - data.base_height_m).toFixed(0) + " m<br />" +
                         towerSummary +
-                        "<button onclick='openExplorer(" + pos.lat() + ", " + pos.lng() +")'>Open Location Explorer</button>"
+                        "<button onclick='openExplorer(" + pos.lat() + ", " + pos.lng() +")'>Open Location Explorer</button>" +
+                        "<button onclick='openAdvisor(" + pos.lat() + ", " + pos.lng() +")'>Signal Optimizer</button>"
                     );
                     currentClickInfo.open(map);
 
@@ -414,6 +415,10 @@
                 let url = "signalmap/" + sw.lat() + "/" + sw.lng() + "/" + ne.lat() + "/" + ne.lng() + "/" + h + "/" + frequency + "/" + lb;
                 this.image = url;
             }
+        }
+
+        function openAdvisor(lat, lon) {
+            window.open("advisor.html?lat=" + lat + "&lon=" + lon);
         }
 
         function openExplorer(lat, lon) {
