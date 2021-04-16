@@ -7,8 +7,8 @@ use std::io::{Cursor, Seek, SeekFrom};
 use crate::WISP;
 use rf_signal_algorithms::{
     bheat::heat_altitude, free_space_path_loss_db, geometry::haversine_distance,
-    itwom_point_to_point, lat_lon_path_1m, lat_lon_path_10m, lat_lon_tile, lat_lon_vec_to_heights, Distance,
-    Frequency, LatLon, PTPClimate, PTPPath,
+    itwom_point_to_point, lat_lon_path_10m, lat_lon_path_1m, lat_lon_tile, lat_lon_vec_to_heights,
+    Distance, Frequency, LatLon, PTPClimate, PTPPath,
 };
 
 pub fn signalmap_tile(
@@ -186,13 +186,13 @@ pub fn signalmap_detail(
         } else if temporary_link_budget > -70.0 {
             (0, 255, 0, 128)
         } else if temporary_link_budget > -80.0 {
-                (255, 255, 0, 128)
+            (255, 255, 0, 128)
         } else {
             (255, 0, 0, 64)
         };
         let base = ((((DETAIL_SIZE - 1) - *y) as usize * 4 * DETAIL_SIZE as usize)
             + ((*x) as usize * 4)) as usize;
-        if base+3 < image_data.len() {
+        if base + 3 < image_data.len() {
             image_data[base] = color.0;
             image_data[base + 1] = color.1;
             image_data[base + 2] = color.2;

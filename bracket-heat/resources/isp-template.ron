@@ -24,14 +24,54 @@ Wisp(
             lat: 38.947927398900426,
             lon: -92.3233740822584,
             height_meters: 55,
-            max_range_km: 16.0934
+            max_range_km: 16.0934,
+            access_points: [
+                AP(
+                    name: "Medusa",
+                    frequency_ghz: 3.6,
+                    max_range_km: 16.0934,
+                    link_budget: 71,
+                ),
+                AP(
+                    name: "58 UBNT",
+                    frequency_ghz: 5.8,
+                    max_range_km: 16.0934,
+                    link_budget: 69,
+                ),
+                AP(
+                    name: "60 Ghz",
+                    frequency_ghz: 60.0,
+                    max_range_km: 3.21869,
+                    link_budget: 97,
+                )
+            ],
         ),
         Tower(
             name: "Biggs",
             lat: 38.798403,
             lon: -92.289524,
             height_meters: 60,
-            max_range_km: 16.0934
+            max_range_km: 16.0934,
+            access_points: [
+                AP(
+                    name: "Medusa",
+                    frequency_ghz: 3.6,
+                    max_range_km: 16.0934,
+                    link_budget: 71,
+                ),
+                AP(
+                    name: "58 UBNT",
+                    frequency_ghz: 5.8,
+                    max_range_km: 16.0934,
+                    link_budget: 69,
+                ),
+                AP(
+                    name: "60 Ghz",
+                    frequency_ghz: 60.0,
+                    max_range_km: 3.21869,
+                    link_budget: 97,
+                )
+            ]
         )
     ]
 )

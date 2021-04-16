@@ -44,7 +44,13 @@ pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, heat_path:
     out
 }
 
-pub fn heightmap_detail(swlat: f64, swlon: f64, nelat: f64, nelon: f64, heat_path: &str) -> Vec<u8> {
+pub fn heightmap_detail(
+    swlat: f64,
+    swlon: f64,
+    nelat: f64,
+    nelon: f64,
+    heat_path: &str,
+) -> Vec<u8> {
     let mut image_data = vec![0u8; DETAIL_SIZE as usize * DETAIL_SIZE as usize * 4];
 
     let points = lat_lon_tile(swlat, swlon, nelat, nelon, DETAIL_SIZE as usize);
@@ -61,7 +67,7 @@ pub fn heightmap_detail(swlat: f64, swlon: f64, nelat: f64, nelon: f64, heat_pat
             let base = ((((DETAIL_SIZE - 1) - y) as usize * 4 * DETAIL_SIZE as usize)
                 + (x as usize * 4)) as usize;
             let n = ((*h as f64 - *min_height as f64) * h_scale) as u8;
-            if base+3 < image_data.len() {
+            if base + 3 < image_data.len() {
                 image_data[base] = n;
                 image_data[base + 1] = n;
                 image_data[base + 2] = n;

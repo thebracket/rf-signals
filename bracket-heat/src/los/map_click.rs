@@ -14,6 +14,7 @@ pub struct ClickSite {
 
 #[derive(Clone, Serialize, Deserialize, Default)]
 pub struct TowerEvaluation {
+    pub tower: String,
     pub name: String,
     pub lat: f64,
     pub lon: f64,
@@ -29,59 +30,19 @@ pub fn evaluate_tower_click(
     heat_path: &str,
     link_budget: f64,
 ) -> ClickSite {
-    let reader = WISP.read();
-    let towers = reader
-        .towers
+    let services = crate::calculators::services_in_range(pos);
+    let evaluation = crate::calculators::evaluate_wireless_services(pos, &services, heat_path);
+
+    let towers = evaluation
         .iter()
-        .enumerate()
-        .filter(|(_, t)| {
-            haversine_distance(pos, &LatLon::new(t.lat, t.lon)).as_km() < t.max_range_km
-        })
-        .map(|(_i, t)| {
-            let base_tower_height = heat_altitude(t.lat, t.lon, heat_path)
-                .unwrap_or((Distance::with_meters(0.0), Distance::with_meters(0.0)))
-                .0
-                .as_meters();
-            let path = lat_lon_path_1m(&LatLon::new(t.lat, t.lon), pos);
-            let los_path = lat_lon_vec_to_heights(&path, heat_path);
-            let d = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
-            let (dbloss, mode) = {
-                let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
-                if path_as_distances.iter().filter(|h| **h == 0.0).count() > 0 {
-                    (0.0, "Missing Data".to_string())
-                } else {
-                    path_as_distances[0] = base_tower_height;
-                    let mut terrain_path = PTPPath::new(
-                        path_as_distances,
-                        Distance::with_meters(t.height_meters),
-                        Distance::with_meters(cpe_height),
-                        Distance::with_meters(1.0),
-                    )
-                    .unwrap();
-
-                    let lr = itwom_point_to_point(
-                        &mut terrain_path,
-                        PTPClimate::default(),
-                        frequency,
-                        0.5,
-                        0.5,
-                        1,
-                    );
-
-                    (lr.dbloss, lr.mode)
-                }
-            };
-
-            let temporary_link_budget = link_budget - dbloss;
-
-            TowerEvaluation {
-                name: t.name.clone(),
-                lat: t.lat,
-                lon: t.lon,
-                rssi: temporary_link_budget,
-                distance_km: d.as_km(),
-                mode,
-            }
+        .map(|e| TowerEvaluation {
+            tower: e.tower.clone(),
+            name: format!("{}:{} @{}m", e.tower, e.name, e.cpe_height),
+            lat: e.tower_pos.lat(),
+            lon: e.tower_pos.lon(),
+            rssi: e.signal,
+            distance_km: e.range_km,
+            mode: e.mode.clone(),
         })
         .collect();
 

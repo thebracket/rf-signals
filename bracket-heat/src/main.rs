@@ -5,6 +5,7 @@ use lazy_static::*;
 use parking_lot::RwLock;
 mod data_defs;
 use data_defs::*;
+mod calculators;
 mod los;
 mod tiler;
 
@@ -25,7 +26,6 @@ lazy_static! {
 lazy_static! {
     static ref ADVISOR_FINAL: RwLock<String> = RwLock::new(String::new());
 }
-
 
 lazy_static! {
     static ref WISP: RwLock<Wisp> = RwLock::new(Wisp::default());
@@ -137,20 +137,9 @@ fn signalmap<'a>(
 }
 
 #[get("/signalmap_detail/<swlat>/<swlon>/<nelat>/<nelon>")]
-fn signalmap_detail<'a>(
-    swlat: f64,
-    swlon: f64,
-    nelat: f64,
-    nelon: f64,
-) -> Response<'a> {
+fn signalmap_detail<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
     let heat_path = WISP.read().heat_path.clone();
-    let image_buffer = tiler::signalmap_detail(
-        swlat,
-        swlon,
-        nelat,
-        nelon,
-        &heat_path,
-    );
+    let image_buffer = tiler::signalmap_detail(swlat, swlon, nelat, nelon, &heat_path);
     let mut response_build = Response::build();
     response_build.header(ContentType::PNG);
     response_build.status(Status::Ok);

@@ -192,7 +192,8 @@
 
                     for (var j=0; j<data.towers.length; j++) {
                         let link = data.towers[j];
-                        let tower = towerList[findTower(link.name)];
+                        let tower = towerList[findTower(link.tower)];
+                        if (tower.cpeLine != null) break;
                         let path = [ { lat: pos.lat(), lng: pos.lng() }, { lat: link.lat, lng: link.lon } ];
                         tower.cpeLine = new google.maps.Polyline({
                             path: path,

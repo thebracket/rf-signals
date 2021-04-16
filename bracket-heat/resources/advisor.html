@@ -84,7 +84,11 @@
             <button id="step3btn" style='background-color: #99ff99;'>I see height data, find service</button>
         </div>
         <div id="step4" style="display: none">
-            <p>This may take a moment...</p>
+            <p>Click to toggle any cells you don't want to evaluate to turn them red.</p>
+            <button id="step4btn" style='background-color: #99ff99;'>Evaluate Positions</button>
+        </div>
+        <div id="step5" style="display: none">
+            <p id="step5msg">Evaluating Positions, please wait.</p>
         </div>
     </div>
 
@@ -103,6 +107,9 @@
         let bottom_right = null;
         let target_rect = null;
         let currentOverlay = null;
+        let signal_rects = [];
+        let progress = 0;
+        let currentClickInfo = null;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -156,14 +163,161 @@
             $("#step3btn").click(() => {
                 $("#step3").hide();
                 $("#step4").show();
-                let bounds = new google.maps.LatLngBounds(
-                    top_left.getPosition(),
-                    bottom_right.getPosition(),
-                );
                 currentOverlay.setMap(null);
-                currentOverlay = null;
-                currentOverlay = new SignalOverlay(bounds);
-                currentOverlay.setMap(map);
+
+                const num_points = 8;
+
+                let latSpan = (bottom_right.getPosition().lat() - top_left.getPosition().lat()) / num_points;
+                let lonSpan = (bottom_right.getPosition().lng() - top_left.getPosition().lng()) / num_points;
+                let lat = top_left.getPosition().lat();
+                let lon = top_left.getPosition().lng();
+
+
+                for (var i=0; i<=num_points; i++) {
+                    for (var j=0; j<=num_points; j++) {
+
+                        let x = lonSpan * i;
+                        let y = latSpan * j;
+
+                        let bounds = {
+                            north: lat + y,
+                            south: lat + latSpan + y,
+                            west: lon + x,
+                            east: lon + lonSpan + x,
+                        };
+                        var rect = new google.maps.Rectangle({
+                            strokeColor: "#9999ff",
+                            strokeOpacity: 0.5,
+                            strokeWeight: 1,
+                            fillColor: "#0000ff",
+                            fillOpacity: 0.3,
+                            map: map,
+                            bounds
+                        });
+                        rect.addListener('mousedown', (e) => {
+                            for (var i=0; i<signal_rects.length; i++) {
+                                if (e.latLng.lat() > signal_rects[i].bounds.north && e.latLng.lat() < signal_rects[i].bounds.south) {
+                                    if (e.latLng.lng() > signal_rects[i].bounds.west && e.latLng.lng() < signal_rects[i].bounds.east) {
+                                        if (signal_rects[i].active) {
+                                            signal_rects[i].rect.setOptions({fillColor: "#ff0000"});
+                                            signal_rects[i].active = false;
+                                        } else {
+                                            signal_rects[i].rect.setOptions({fillColor: "#0000ff"});
+                                            signal_rects[i].active = true;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        signal_rects.push(
+                            { rect: rect, center_lat: lat + (y/2), center_lon: lon + (x/2), bounds: bounds, active: true }
+                        );
+                    }
+                }
+            });
+
+            $("#step4btn").click(() => {
+                $("#step4").hide();
+                $("#step5").show();
+                for (var i=0; i<signal_rects.length; i++) {
+                    signal_rects[i].rect.setMap(null);
+                    signal_rects[i].rect = null;
+                    // Draw a new one
+                    if (signal_rects[i].active) {
+                        signal_rects[i].rect = new google.maps.Rectangle({
+                                strokeColor: "#9999ff",
+                                strokeOpacity: 0.5,
+                                strokeWeight: 1,
+                                fillColor: "#0000ff",
+                                fillOpacity: 0.3,
+                                map: map,
+                                bounds: signal_rects[i].bounds
+                            }
+                        );
+                    }
+                }
+                progress = 0;
+                setTimeout(onTick, 10);
+            });
+        }
+
+        function onTick() {
+            let url = "/mapclick/" + signal_rects[progress].center_lat + "/" + signal_rects[progress].center_lon + "/0/0/0";
+            $.get(url, (data) => {
+                if (signal_rects[progress].active) {
+                    let best_signal = -500;
+                    for (var i=0; i<data.towers.length; i++) {
+                        let rssi = data.towers[i].rssi;
+                        if (rssi > best_signal) {
+                            best_signal = rssi;
+                        }
+                    }
+                    console.log(best_signal);
+
+                    if (best_signal > -55) {
+                        signal_rects[progress].rect.setOptions({fillColor: "#99ff99"});
+                    } else if (best_signal > -60) {
+                        signal_rects[progress].rect.setOptions({fillColor: "#00ff00"});
+                    } else if (best_signal > -80) {
+                        signal_rects[progress].rect.setOptions({fillColor: "#ffff00"});
+                    } else {
+                        signal_rects[progress].rect.setOptions({fillColor: "#ff0000"});
+                    }
+
+                    // Store the evaluation for display
+                    signal_rects[progress].evaluation = data;
+                }
+
+                // Keep ticking until we're done
+                progress += 1;
+                if (progress < signal_rects.length) {
+                    setTimeout(onTick, 10);
+                } else {
+                    $("#step5msg").text("Task complete. You can click on any rectangle for full information about the location.");
+                    for (var i=0; i<signal_rects.length; i++) {
+                        if (signal_rects[i].active) {
+                            signal_rects[i].rect.addListener('click', (e) => {
+                                for (var i=0; i<signal_rects.length; i++) {
+                                    if (e.latLng.lat() > signal_rects[i].bounds.north && e.latLng.lat() < signal_rects[i].bounds.south) {
+                                        if (e.latLng.lng() > signal_rects[i].bounds.west && e.latLng.lng() < signal_rects[i].bounds.east) {
+                                            if (currentClickInfo != null) {
+                                                currentClickInfo.setMap(null);
+                                                currentClickInfo = null;
+                                            }
+                                            // We're in the zone...
+                                            let data = signal_rects[i].evaluation;
+                                            console.log(data);
+                                            let pos = new google.maps.LatLng(signal_rects[i].center_lat, signal_rects[i].center_lon);
+
+                                            currentClickInfo = new google.maps.InfoWindow();
+                                            currentClickInfo.setPosition({ lat: pos.lat(), lng: pos.lng() });
+                                            data.towers.sort((a,b) => (a.rssi < b.rssi) ? 1 : -1);
+                                            let towerSummary = "<table border='1' cellpadding='2' cellspacing='0'><tr style='font-weight: bold'><td>Tower</td><td>Distance</td><td>RSSI</td><td>Mode</td></tr>";
+                                            for (var j=0; j<data.towers.length; j++) {
+                                                let link = data.towers[j];
+                                                towerSummary += "<tr>";
+                                                towerSummary += "<td>" + link.name + "</td>";
+                                                towerSummary += "<td>" + link.distance_km.toFixed(2) + "km</td>";
+                                                towerSummary += "<td>" + link.rssi.toFixed(2) + "dB</td>";
+                                                towerSummary += "<td>" + link.mode + "</td>";
+                                                towerSummary += "</tr>";
+                                            }
+                                            towerSummary += "</table>";
+                                            currentClickInfo.setContent(
+                                                "<strong>Location:</strong>: " + pos.lat().toFixed(4) + ", " + pos.lng().toFixed(4) + "<br />" +
+                                                "<strong>Ground (SRTM) Altitude</strong>: " + data.base_height_m + " m<br />" +
+                                                "<strong>Lidar (Clutter) Altitude</strong>: " + data.lidar_height_m + " m<br />" +
+                                                "<strong>Estimated Location Altitude Above Ground</strong>: " + (data.lidar_height_m - data.base_height_m).toFixed(0) + " m<br />" +
+                                                towerSummary
+                                            );
+                                            currentClickInfo.open(map);
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
             });
         }
 
