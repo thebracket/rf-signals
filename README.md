@@ -5,7 +5,7 @@ This is a long-term project for my employer, [iZones](https://izones.net/). They
 This project is divided into three parts:
 
 * *rf_signal_algorithms* is a pure Rust port of [Cloud-RF/Signal Server](https://github.com/Cloud-RF/Signal-Server)'s algorithms. In turn, this is based upon SPLAT! by Alex Farrant and John A. Magliacane. I've retained the GPL2 license, because the parent requires it.
-* *terrain-cooker* reads `las` files (LiDAR point clouds) and converts them into `bheat` files for efficient processing inside 'bracket-heat'.
+* *terrain-cooker* reads `las` files (LiDAR point clouds) and converts them into `bheat` files for efficient processing inside `bracket-heat`.
 * *bracket-heat* is a web-based planning tool to help you decide if Wireless Internet installations are likely to work.
 
 ## Bracket-Heat
