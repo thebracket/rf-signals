@@ -20,7 +20,12 @@ You can enter any address into the search box, and it runs a Google reverse geol
 
 ![](screenshots/search.jpg)
 
-You can switch to satellite view, terrain view, etc. to help you find the location. Once you've found the building, you can click on it to see a quick path/service estimate for the location:
+You can switch to satellite view, terrain view, etc. to help you find the location. You can click the "height" button at any time to see an overlay of your LiDAR data - great for checking that your data works, and getting an overview of the general area:
+
+![](screenshots/heightmap1.jpg)
+![](screenshots/heightmap2.jpg)
+
+Once you've found the building, you can click on it to see a quick path/service estimate for the location:
 
 ![](screenshots/quickestimate.jpg)
 
