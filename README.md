@@ -98,6 +98,7 @@ If you want to use this yourself, there's a few steps to get going.
 * You need LiDAR `.las` files for your coverage area. Your county assessor, or state land-grant university probably has them. For Missouri, I obtain them from [MSDIS](https://msdis.maps.arcgis.com/apps/View/index.html?appid=276d7a04beef4bb2820a13b12a144598). You should be able to use any LiDAR file, so long as it is in LAS format, and in a cartographic projection supported by Proj.
 * You'll probably want to have access to Linux (or Windows Services for Linux) for converting LiDAR files. PROJ is a bear to get running in Rust on Windows.
 * You need a Google Maps API key.
+* Rocket requires that you run rust in `nightly` mode.
 
 ## Initial Setup
 
