@@ -17,7 +17,7 @@ publish = false
 #srtm = [ "geo", "lru", "lazy_static", "parking_lot", "memmap" ]
 
 [dependencies]
-num-complex = "0.3.1"
+num-complex = "0.4.0"
 geo = { version =  "0.17.0", optional = false }
 lazy_static = { version = "1.4.0", optional = false }
 parking_lot = { version = "0.11.0", optional = false }
@@ -31,5 +31,5 @@ lru = "0.6.5"
 float-cmp = "0.8"
 
 [build-dependencies]
-bindgen = "0.57.0"
+bindgen = "0.58.1"
 cc = "1.0.66"
