@@ -107,6 +107,10 @@ If you want to use this yourself, there's a few steps to get going.
 
 In your project directory, type `cd terrain-cooker`. Then run the conversion with `cargo run --release`. It will evaluate all `.las` files in the LIDAR folder, reading `.hgt` files from your heightmap directory and spit out `bheat` tiles. BHeat tiles start with a heightmap derived from your `hgt` files - and then adjust ground height and add terrain clutter heights from LiDAR files. This is an additive process: you can re-run it with new LiDAR data whenever you want, and the new data will be merged in.
 
+## Add in your Google maps key
+
+In `bracket-heat`, create a file named `gmap_key.txt` and paste your Google Maps API key into it. I didn't want to give you mine!
+
 ## Setup your WISP Information
 
 1. Change to the `bracket-heat` directory.
