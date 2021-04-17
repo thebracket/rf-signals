@@ -38,16 +38,16 @@ pub fn lat_lon_tile(
     points
 }
 
-fn highest_altitude(point: &LatLon, heat_path: &str) -> u16 {
+fn highest_altitude(point: &LatLon, heat_path: &str) -> f64 {
     let altitudes = heat_altitude(point.lat(), point.lon(), heat_path)
         .unwrap_or((Distance::with_meters(0.0), Distance::with_meters(0.0)));
-    u16::max(
-        altitudes.0.as_meters() as u16,
-        altitudes.1.as_meters() as u16,
+    f64::max(
+        altitudes.0.as_meters(),
+        altitudes.1.as_meters(),
     )
 }
 
-pub fn height_tile_elevations(points: &[(u32, u32, LatLon)], heat_path: &str) -> Vec<u16> {
+pub fn height_tile_elevations(points: &[(u32, u32, LatLon)], heat_path: &str) -> Vec<f64> {
     points
         .par_iter()
         .map(|(_, _, point)| highest_altitude(point, heat_path))
@@ -80,7 +80,7 @@ pub fn lat_lon_path_1m(src: &LatLon, dst: &LatLon) -> Vec<LatLon> {
     path
 }
 
-pub fn lat_lon_vec_to_heights(points: &[LatLon], heat_path: &str) -> Vec<u16> {
+pub fn lat_lon_vec_to_heights(points: &[LatLon], heat_path: &str) -> Vec<f64> {
     points
         .par_iter()
         .map(|point| highest_altitude(point, heat_path))
@@ -88,17 +88,17 @@ pub fn lat_lon_vec_to_heights(points: &[LatLon], heat_path: &str) -> Vec<u16> {
 }
 
 pub fn has_line_of_sight(
-    los_path: &[u16],
+    los_path: &[f64],
     start_elevation: Distance,
     end_elevation: Distance,
 ) -> bool {
-    let start_height = los_path[0] + start_elevation.as_meters() as u16;
+    let start_height = los_path[0] + start_elevation.as_meters();
     let end_height = end_elevation.as_meters() as u16; // Not using terrain because of confusion with clutter on lidar
     let height_step = (end_height as f64 - start_height as f64) / los_path.len() as f64;
     let mut current_height = start_height as f64;
     let mut visible = true;
     for p in los_path.iter() {
-        if current_height < *p as f64 {
+        if current_height < *p {
             visible = false;
             break;
         }

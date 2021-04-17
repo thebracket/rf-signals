@@ -12,12 +12,19 @@ pub fn heightmap_tile(swlat: f64, swlon: f64, nelat: f64, nelon: f64, heat_path:
     let points = lat_lon_tile(swlat, swlon, nelat, nelon, TILE_SIZE as usize);
     let heights = height_tile_elevations(&points, heat_path);
 
-    let min_height = heights.iter().filter(|a| **a > 0).min().unwrap_or(&0);
-    let max_height = heights.iter().max().unwrap_or(&1);
+    let min_height = heights
+        .iter()
+        .filter(|a| **a > 0.0)
+        .min_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap_or(&0.0);
+    let max_height = heights
+        .iter()
+        .max_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap_or(&1.0);
     let h_scale = 255.0 / (*max_height as f64 - *min_height as f64);
 
     heights.iter().enumerate().for_each(|(i, h)| {
-        if *h > 0 {
+        if *h > 0.0 {
             let x = points[i].0;
             let y = points[i].1;
             let base = ((((TILE_SIZE - 1) - y) as usize * 4 * TILE_SIZE as usize)
@@ -56,12 +63,19 @@ pub fn heightmap_detail(
     let points = lat_lon_tile(swlat, swlon, nelat, nelon, DETAIL_SIZE as usize);
     let heights = height_tile_elevations(&points, heat_path);
 
-    let min_height = heights.iter().filter(|a| **a > 0).min().unwrap_or(&0);
-    let max_height = heights.iter().max().unwrap_or(&1);
+    let min_height = heights
+        .iter()
+        .filter(|a| **a > 0.0)
+        .min_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap_or(&0.0);
+    let max_height = heights
+        .iter()
+        .max_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap_or(&1.0);
     let h_scale = 255.0 / (*max_height as f64 - *min_height as f64);
 
     heights.iter().enumerate().for_each(|(i, h)| {
-        if *h > 0 {
+        if *h > 0.0 {
             let x = points[i].0;
             let y = points[i].1;
             let base = ((((DETAIL_SIZE - 1) - y) as usize * 4 * DETAIL_SIZE as usize)

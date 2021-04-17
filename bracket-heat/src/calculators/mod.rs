@@ -96,17 +96,16 @@ fn evaluate_wireless_service(
         let path = lat_lon_path_1m(&service.pos, pos);
 
         // Create a list of altitudes to use
-        let los_path = lat_lon_vec_to_heights(&path, heat_path);
+        let mut los_path = lat_lon_vec_to_heights(&path, heat_path);
 
-        // Convert los_path from an array of u16 to f64 and force the tower height in spot 0.
-        let mut path_as_distances: Vec<f64> = los_path.iter().map(|d| *d as f64).collect();
-        path_as_distances[0] = base_tower_height;
+        // Force the tower height in spot 0.
+        los_path[0] = base_tower_height;
 
         let mut found_los = false;
         let mut cpe_height = 0.25;
         let mut last_mode = String::new();
         while cpe_height < 3.6 && !found_los {
-            let (loss, mode) = itm_eval(cpe_height, &path_as_distances, service);
+            let (loss, mode) = itm_eval(cpe_height, &los_path, service);
             let signal = service.link_budget_db - loss;
             let mut ok = true;
             if signal < -80.0 {
