@@ -37,6 +37,8 @@ You can also click "signal optimizer" to use a wizard to identify your target ar
 
 ![](screenshots/signaloptimize.jpg)
 
+We've had pretty good success cutting down on failed site surveys, and finding signal where we might not have expected it, with this tool. Hopefully, it can help your WISP, also.
+
 ## Ported Algorithms
 
 This crate provides Rust implementations of a number of algorithms that are useful in wireless calculations:
