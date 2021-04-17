@@ -114,7 +114,7 @@ In your project directory, type `cd terrain-cooker`. Then run the conversion wit
 
 The default file looks like this:
 
-~~~
+~~~ron
 Wisp(
     listen_port: 8000,
     name: "iZones LLC",
