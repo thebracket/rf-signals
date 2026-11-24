@@ -2,6 +2,8 @@
 
 This is a long-term project for my employer, [iZones](https://izones.net/). They kindly gave me permission to open source a big chunk of our wireless planning software. We're a WISP (Wireless Internet Service Provider), and hope this helps other WISPs to succeed.
 
+> This is the basis of https://wispplanner.com/
+
 This project is divided into three parts:
 
 * *rf_signal_algorithms* is a pure Rust port of [Cloud-RF/Signal Server](https://github.com/Cloud-RF/Signal-Server)'s algorithms. In turn, this is based upon SPLAT! by Alex Farrant and John A. Magliacane. I've retained the GPL2 license, because the parent requires it.
