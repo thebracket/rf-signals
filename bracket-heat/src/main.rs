@@ -9,7 +9,12 @@ use rocket::{fs::NamedFile, get, http::ContentType, response::content, routes, s
 use std::sync::{LazyLock, RwLock};
 
 // Please save your API key in gmap_key.txt in the `resources` directory.
-const GOOGLE_MAPS_API_KEY: &str = include_str!("../resources/gmap_key.txt");
+// The key is read at runtime (not baked into the compiled binary) so it
+// isn't exposed to anyone with access to the build artifacts.
+fn load_gmap_key() -> String {
+    std::fs::read_to_string("resources/gmap_key.txt")
+        .expect("Unable to read resources/gmap_key.txt - please create it with your Google Maps API key")
+}
 const INDEX_HTML: &str = include_str!("../resources/index.html");
 const ADVISOR_HTML: &str = include_str!("../resources/advisor.html");
 
@@ -178,11 +183,12 @@ fn los_plot(
 async fn main() {
     let wisp_def = load_wisp();
     let listen_port = wisp_def.listen_port;
+    let gmap_key = load_gmap_key();
 
     // Do some replace magic to place the correct key and version in the HTML
     *INDEX_FINAL.write().unwrap() = INDEX_HTML
         .replace("_BANNER_", "Bracket-Heat 0.1")
-        .replace("_GMAPKEY_", &GOOGLE_MAPS_API_KEY.replace("\n", ""))
+        .replace("_GMAPKEY_", &gmap_key.replace("\n", ""))
         .replace("_CENTER_LAT_", &wisp_def.center.0.to_string())
         .replace("_CENTER_LON_", &wisp_def.center.1.to_string())
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
@@ -190,7 +196,7 @@ async fn main() {
 
     *ADVISOR_FINAL.write().unwrap() = ADVISOR_HTML
         .replace("_BANNER_", "Bracket-Heat 0.1")
-        .replace("_GMAPKEY_", &GOOGLE_MAPS_API_KEY.replace("\n", ""))
+        .replace("_GMAPKEY_", &gmap_key.replace("\n", ""))
         .replace("_CENTER_LAT_", &wisp_def.center.0.to_string())
         .replace("_CENTER_LON_", &wisp_def.center.1.to_string())
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
