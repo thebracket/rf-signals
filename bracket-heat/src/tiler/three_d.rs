@@ -1,6 +1,5 @@
 use rf_signal_algorithms::{bheat::heat_altitude, Distance};
-use serde::{Deserialize, Serialize};
-pub(crate) const TILE_SIZE: u32 = 256;
+use serde::Serialize;
 const HEIGHT_DIVISOR: f32 = 10.0;
 
 #[derive(Clone, Serialize)]

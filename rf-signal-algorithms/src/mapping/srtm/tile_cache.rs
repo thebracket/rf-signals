@@ -1,15 +1,13 @@
 use super::SrtmTile;
 use crate::Distance;
 use crate::LatLon;
-use lazy_static::*;
-use memmap::{Mmap, MmapOptions};
-use parking_lot::RwLock;
+use memmap2::{Mmap, MmapOptions};
 use std::collections::HashMap;
 use std::fs::File;
+use std::sync::{LazyLock, RwLock};
 
-lazy_static! {
-    static ref TILE_CACHE: RwLock<HashMap<SrtmTile, Mmap>> = RwLock::new(HashMap::new());
-}
+static TILE_CACHE: LazyLock<RwLock<HashMap<SrtmTile, Mmap>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 pub fn get_altitude(loc: &LatLon, terrain_path: &str) -> Option<Distance> {
     // Check for already cached tiles
@@ -20,7 +18,7 @@ pub fn get_altitude(loc: &LatLon, terrain_path: &str) -> Option<Distance> {
 
     // If we've got this far, it isn't cached. Try and load it.
     if let Some(tile) = SrtmTile::check_availability(loc, terrain_path) {
-        let mut cache_writer = TILE_CACHE.write();
+        let mut cache_writer = TILE_CACHE.write().unwrap();
         if let Ok(cache_file) = File::open(&tile.filename(terrain_path)) {
             let mapped_file = unsafe { MmapOptions::new().map(&cache_file).unwrap() };
             let elevation = get_elevation(loc, &tile, &mapped_file);
@@ -36,21 +34,21 @@ pub fn get_altitude(loc: &LatLon, terrain_path: &str) -> Option<Distance> {
 }
 
 fn check_existing(loc: &LatLon) -> Option<Distance> {
-    let cache_reader = TILE_CACHE.read();
+    let cache_reader = TILE_CACHE.read().unwrap();
 
     let third = loc.to_srtm_third();
     if let Some(mm) = cache_reader.get(&third) {
-        return Some(get_elevation(loc, &third, &mm));
+        return Some(get_elevation(loc, &third, mm));
     }
 
     let three = loc.to_srtm3();
     if let Some(mm) = cache_reader.get(&three) {
-        return Some(get_elevation(loc, &three, &mm));
+        return Some(get_elevation(loc, &three, mm));
     }
 
     let one = loc.to_srtm1();
     if let Some(mm) = cache_reader.get(&one) {
-        return Some(get_elevation(loc, &one, &mm));
+        return Some(get_elevation(loc, &one, mm));
     }
 
     None

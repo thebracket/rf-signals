@@ -1,8 +1,4 @@
-use crate::WISP;
-use rf_signal_algorithms::{
-    bheat::heat_altitude, geometry::haversine_distance, itwom_point_to_point, lat_lon_path_1m,
-    lat_lon_vec_to_heights, Distance, Frequency, LatLon, PTPClimate, PTPPath,
-};
+use rf_signal_algorithms::{bheat::heat_altitude, Distance, Frequency, LatLon};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Default)]
@@ -25,10 +21,10 @@ pub struct TowerEvaluation {
 
 pub fn evaluate_tower_click(
     pos: &LatLon,
-    frequency: Frequency,
-    cpe_height: f64,
+    _frequency: Frequency,
+    _cpe_height: f64,
     heat_path: &str,
-    link_budget: f64,
+    _link_budget: f64,
 ) -> ClickSite {
     let services = crate::calculators::services_in_range(pos);
     let evaluation = crate::calculators::evaluate_wireless_services(pos, &services, heat_path);

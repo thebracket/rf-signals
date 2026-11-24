@@ -1,5 +1,4 @@
 /target
-Cargo.lock
 .vscode
 bracket-heat/resources/gmap_key.txt
 bracket-heat/resources/isp.ron

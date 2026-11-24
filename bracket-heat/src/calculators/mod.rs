@@ -32,7 +32,7 @@ pub struct PossibleLink {
 pub fn services_in_range(pos: &LatLon) -> Vec<WirelessService> {
     let mut result = Vec::new();
 
-    let wisp_reader = WISP.read();
+    let wisp_reader = WISP.read().unwrap();
     wisp_reader.towers.iter().for_each(|t| {
         let range = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
 

@@ -41,10 +41,7 @@ pub fn lat_lon_tile(
 fn highest_altitude(point: &LatLon, heat_path: &str) -> f64 {
     let altitudes = heat_altitude(point.lat(), point.lon(), heat_path)
         .unwrap_or((Distance::with_meters(0.0), Distance::with_meters(0.0)));
-    f64::max(
-        altitudes.0.as_meters(),
-        altitudes.1.as_meters(),
-    )
+    f64::max(altitudes.0.as_meters(), altitudes.1.as_meters())
 }
 
 pub fn height_tile_elevations(points: &[(u32, u32, LatLon)], heat_path: &str) -> Vec<f64> {

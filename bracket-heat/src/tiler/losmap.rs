@@ -18,7 +18,7 @@ pub fn losmap_tile(
     heat_path: &str,
 ) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
-    let wisp_reader = WISP.read();
+    let wisp_reader = WISP.read().unwrap();
 
     let points = lat_lon_tile(swlat, swlon, nelat, nelon, TILE_SIZE as usize);
     points.iter().for_each(|(x, y, p)| {
@@ -56,7 +56,7 @@ pub fn losmap_tile(
     let mut w = Cursor::new(Vec::new());
     {
         let mut encoder = png::Encoder::new(&mut w, TILE_SIZE as _, TILE_SIZE as _);
-        encoder.set_color(png::ColorType::RGBA);
+        encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
         writer.write_image_data(&image_data).unwrap();

@@ -2,7 +2,8 @@
 name = "rf-signal-algorithms"
 version = "0.1.0"
 authors = ["Herbert Wolverson <herberticus@gmail.com>"]
-edition = "2018"
+edition = "2021"
+rust-version = "1.88"
 description = "Rust wrapper for https://github.com/Cloud-RF/Signal-Server signal algorithms."
 readme = "README.md"
 license = "GPL2"
@@ -11,25 +12,12 @@ keywords = ["rf", "radio", "longley-rice"]
 categories = [ "algorithms" ]
 publish = false
 
-#default-features = [ "srtm" ]
-
-#[features]
-#srtm = [ "geo", "lru", "lazy_static", "parking_lot", "memmap" ]
-
 [dependencies]
-num-complex = "0.4.0"
-geo = { version =  "0.17.0", optional = false }
-lazy_static = { version = "1.4.0", optional = false }
-parking_lot = { version = "0.11.0", optional = false }
-memmap = { version = "0.7.0", optional = false }
-bytemuck = "1.4.1"
-quadtree-f32 = "0.3.0"
-rayon = "1.5.0"
-lru = "0.6.5"
+num-complex = "0.4"
+geo = { version = "0.33", default-features = false }
+memmap2 = "0.9"
+bytemuck = "1.25"
+rayon = "1.12"
 
 [dev-dependencies]
-float-cmp = "0.8"
-
-[build-dependencies]
-bindgen = "0.58.1"
-cc = "1.0.66"
+float-cmp = "0.10"

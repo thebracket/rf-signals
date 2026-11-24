@@ -1,115 +1,94 @@
-#![feature(proc_macro_hygiene, decl_macro)]
-#[macro_use]
-extern crate rocket;
-use lazy_static::*;
-use parking_lot::RwLock;
 mod data_defs;
 use data_defs::*;
 mod calculators;
 mod los;
 mod tiler;
 
+use rf_signal_algorithms::{Frequency, LatLon};
+use rocket::{fs::NamedFile, get, http::ContentType, response::content, routes, serde::json::Json};
+use std::sync::{LazyLock, RwLock};
+
 // Please save your API key in gmap_key.txt in the `resources` directory.
 const GOOGLE_MAPS_API_KEY: &str = include_str!("../resources/gmap_key.txt");
 const INDEX_HTML: &str = include_str!("../resources/index.html");
 const ADVISOR_HTML: &str = include_str!("../resources/advisor.html");
-use rf_signal_algorithms::{Frequency, LatLon};
-use rocket::{config::Environment, Config, Response};
-use rocket::{http::ContentType, http::Status, response::content};
-use rocket_contrib::json::Json;
 
 // Data Storage Holders
-lazy_static! {
-    static ref INDEX_FINAL: RwLock<String> = RwLock::new(String::new());
-}
-
-lazy_static! {
-    static ref ADVISOR_FINAL: RwLock<String> = RwLock::new(String::new());
-}
-
-lazy_static! {
-    static ref WISP: RwLock<Wisp> = RwLock::new(Wisp::default());
-}
+static INDEX_FINAL: LazyLock<RwLock<String>> = LazyLock::new(|| RwLock::new(String::new()));
+static ADVISOR_FINAL: LazyLock<RwLock<String>> = LazyLock::new(|| RwLock::new(String::new()));
+static WISP: LazyLock<RwLock<Wisp>> = LazyLock::new(|| RwLock::new(Wisp::default()));
 
 #[get("/")]
-fn index() -> content::Html<String> {
-    content::Html(INDEX_FINAL.read().clone())
+fn index() -> content::RawHtml<String> {
+    content::RawHtml(INDEX_FINAL.read().unwrap().clone())
 }
 
 #[get("/advisor.html")]
-fn advisor() -> content::Html<String> {
-    content::Html(ADVISOR_FINAL.read().clone())
-}
-
-#[get("/three.js")]
-fn three_js<'a>() -> rocket::response::Stream<std::fs::File> {
-    use std::fs::File;
-    rocket::response::Stream::from(File::open("resources/three.js").unwrap())
+fn advisor() -> content::RawHtml<String> {
+    content::RawHtml(ADVISOR_FINAL.read().unwrap().clone())
 }
 
 #[get("/locinfo.html")]
-fn loc_info<'a>() -> rocket::response::Stream<std::fs::File> {
-    use std::fs::File;
-    rocket::response::Stream::from(File::open("resources/locinfo.html").unwrap())
+async fn loc_info() -> Option<NamedFile> {
+    NamedFile::open("resources/locinfo.html").await.ok()
 }
 
 #[get("/tower_Marker.png")]
-fn tower_marker<'a>() -> rocket::response::Stream<std::fs::File> {
-    use std::fs::File;
-    rocket::response::Stream::from(File::open("resources/tower_Marker.png").unwrap())
+async fn tower_marker() -> Option<NamedFile> {
+    NamedFile::open("resources/tower_Marker.png").await.ok()
 }
 
 #[get("/pngegg.png")]
-fn pngegg<'a>() -> rocket::response::Stream<std::fs::File> {
-    use std::fs::File;
-    rocket::response::Stream::from(File::open("resources/pngegg.png").unwrap())
+async fn pngegg() -> Option<NamedFile> {
+    NamedFile::open("resources/pngegg.png").await.ok()
 }
 
 #[get("/towers", format = "json")]
 fn towers() -> Json<Vec<Tower>> {
-    Json(WISP.read().towers.clone())
+    Json(WISP.read().unwrap().towers.clone())
 }
 
 #[get("/budgets", format = "json")]
 fn budgets() -> Json<Vec<LinkBudget>> {
-    Json(WISP.read().link_budgets.clone())
+    Json(WISP.read().unwrap().link_budgets.clone())
+}
+
+fn png_response(image_buffer: Vec<u8>) -> (ContentType, Vec<u8>) {
+    (ContentType::PNG, image_buffer)
 }
 
 #[get("/heightmap/<swlat>/<swlon>/<nelat>/<nelon>")]
-fn heightmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
-    let heat_path = WISP.read().heat_path.clone();
-    let image_buffer = tiler::heightmap_tile(swlat, swlon, nelat, nelon, &heat_path);
-    let mut response_build = Response::build();
-    response_build.header(ContentType::PNG);
-    response_build.status(Status::Ok);
-    response_build.streamed_body(std::io::Cursor::new(image_buffer));
-    response_build.finalize()
+fn heightmap(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> (ContentType, Vec<u8>) {
+    let heat_path = WISP.read().unwrap().heat_path.clone();
+    png_response(tiler::heightmap_tile(
+        swlat, swlon, nelat, nelon, &heat_path,
+    ))
 }
 
 #[get("/heightmap_detail/<swlat>/<swlon>/<nelat>/<nelon>")]
-fn heightmap_detail<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
-    let heat_path = WISP.read().heat_path.clone();
-    let image_buffer = tiler::heightmap_detail(swlat, swlon, nelat, nelon, &heat_path);
-    let mut response_build = Response::build();
-    response_build.header(ContentType::PNG);
-    response_build.status(Status::Ok);
-    response_build.streamed_body(std::io::Cursor::new(image_buffer));
-    response_build.finalize()
+fn heightmap_detail(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> (ContentType, Vec<u8>) {
+    let heat_path = WISP.read().unwrap().heat_path.clone();
+    png_response(tiler::heightmap_detail(
+        swlat, swlon, nelat, nelon, &heat_path,
+    ))
 }
 
 #[get("/losmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>")]
-fn losmap<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64, cpe_height: f64) -> Response<'a> {
-    let heat_path = WISP.read().heat_path.clone();
-    let image_buffer = tiler::losmap_tile(swlat, swlon, nelat, nelon, cpe_height, &heat_path);
-    let mut response_build = Response::build();
-    response_build.header(ContentType::PNG);
-    response_build.status(Status::Ok);
-    response_build.streamed_body(std::io::Cursor::new(image_buffer));
-    response_build.finalize()
+fn losmap(
+    swlat: f64,
+    swlon: f64,
+    nelat: f64,
+    nelon: f64,
+    cpe_height: f64,
+) -> (ContentType, Vec<u8>) {
+    let heat_path = WISP.read().unwrap().heat_path.clone();
+    png_response(tiler::losmap_tile(
+        swlat, swlon, nelat, nelon, cpe_height, &heat_path,
+    ))
 }
 
 #[get("/signalmap/<swlat>/<swlon>/<nelat>/<nelon>/<cpe_height>/<frequency>/<link_budget>")]
-fn signalmap<'a>(
+fn signalmap(
     swlat: f64,
     swlon: f64,
     nelat: f64,
@@ -117,9 +96,9 @@ fn signalmap<'a>(
     cpe_height: f64,
     frequency: f64,
     link_budget: f64,
-) -> Response<'a> {
-    let heat_path = WISP.read().heat_path.clone();
-    let image_buffer = tiler::signalmap_tile(
+) -> (ContentType, Vec<u8>) {
+    let heat_path = WISP.read().unwrap().heat_path.clone();
+    png_response(tiler::signalmap_tile(
         swlat,
         swlon,
         nelat,
@@ -128,37 +107,29 @@ fn signalmap<'a>(
         frequency,
         &heat_path,
         link_budget,
-    );
-    let mut response_build = Response::build();
-    response_build.header(ContentType::PNG);
-    response_build.status(Status::Ok);
-    response_build.streamed_body(std::io::Cursor::new(image_buffer));
-    response_build.finalize()
+    ))
 }
 
 #[get("/signalmap_detail/<swlat>/<swlon>/<nelat>/<nelon>")]
-fn signalmap_detail<'a>(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> Response<'a> {
-    let heat_path = WISP.read().heat_path.clone();
-    let image_buffer = tiler::signalmap_detail(swlat, swlon, nelat, nelon, &heat_path);
-    let mut response_build = Response::build();
-    response_build.header(ContentType::PNG);
-    response_build.status(Status::Ok);
-    response_build.streamed_body(std::io::Cursor::new(image_buffer));
-    response_build.finalize()
+fn signalmap_detail(swlat: f64, swlon: f64, nelat: f64, nelon: f64) -> (ContentType, Vec<u8>) {
+    let heat_path = WISP.read().unwrap().heat_path.clone();
+    png_response(tiler::signalmap_detail(
+        swlat, swlon, nelat, nelon, &heat_path,
+    ))
 }
 
 #[get(
     "/mapclick/<lat>/<lon>/<cpe_height>/<frequency>/<link_budget>",
     format = "json"
 )]
-fn map_click<'a>(
+fn map_click(
     lat: f64,
     lon: f64,
     frequency: f64,
     cpe_height: f64,
     link_budget: f64,
 ) -> Json<los::ClickSite> {
-    let heat_path = WISP.read().heat_path.clone();
+    let heat_path = WISP.read().unwrap().heat_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::evaluate_tower_click(
         &pos,
@@ -171,12 +142,12 @@ fn map_click<'a>(
 
 #[get("/3d/<lat>/<lon>", format = "json")]
 fn tile3d(lat: f64, lon: f64) -> Json<tiler::TerrainBlob> {
-    let heat_path = WISP.read().heat_path.clone();
+    let heat_path = WISP.read().unwrap().heat_path.clone();
     Json(tiler::build_3d_heightmap(lat, lon, &heat_path))
 }
 
 #[get("/losplot/<lat>/<lon>/<tower_name>/<cpe_height>/<frequency>")]
-fn los_plot<'a>(
+fn los_plot(
     lat: f64,
     lon: f64,
     tower_name: String,
@@ -185,13 +156,14 @@ fn los_plot<'a>(
 ) -> Json<los::LineOfSightPlot> {
     let tower_index = WISP
         .read()
+        .unwrap()
         .towers
         .iter()
         .enumerate()
         .find(|(_i, t)| t.name == tower_name)
         .map(|(i, _)| i)
         .unwrap();
-    let heat_path = WISP.read().heat_path.clone();
+    let heat_path = WISP.read().unwrap().heat_path.clone();
     let pos = LatLon::new(lat, lon);
     Json(los::los_plot(
         &pos,
@@ -202,11 +174,13 @@ fn los_plot<'a>(
     ))
 }
 
-fn main() {
+#[rocket::main]
+async fn main() {
     let wisp_def = load_wisp();
+    let listen_port = wisp_def.listen_port;
 
     // Do some replace magic to place the correct key and version in the HTML
-    *INDEX_FINAL.write() = INDEX_HTML
+    *INDEX_FINAL.write().unwrap() = INDEX_HTML
         .replace("_BANNER_", "Bracket-Heat 0.1")
         .replace("_GMAPKEY_", &GOOGLE_MAPS_API_KEY.replace("\n", ""))
         .replace("_CENTER_LAT_", &wisp_def.center.0.to_string())
@@ -214,7 +188,7 @@ fn main() {
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
         .replace("_ISP_NAME_", &format!("\"{}\"", &wisp_def.name));
 
-    *ADVISOR_FINAL.write() = ADVISOR_HTML
+    *ADVISOR_FINAL.write().unwrap() = ADVISOR_HTML
         .replace("_BANNER_", "Bracket-Heat 0.1")
         .replace("_GMAPKEY_", &GOOGLE_MAPS_API_KEY.replace("\n", ""))
         .replace("_CENTER_LAT_", &wisp_def.center.0.to_string())
@@ -222,14 +196,10 @@ fn main() {
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
         .replace("_ISP_NAME_", &format!("\"{}\"", &wisp_def.name));
 
-    let config = Config::build(Environment::Production)
-        .port(wisp_def.listen_port)
-        .finalize()
-        .unwrap();
+    *WISP.write().unwrap() = wisp_def;
 
-    *WISP.write() = wisp_def;
-
-    rocket::custom(config)
+    let config = rocket::Config::figment().merge(("port", listen_port));
+    if let Err(e) = rocket::custom(config)
         .mount(
             "/",
             routes![
@@ -246,10 +216,13 @@ fn main() {
                 pngegg,
                 los_plot,
                 budgets,
-                three_js,
                 loc_info,
                 tile3d,
             ],
         )
-        .launch();
+        .launch()
+        .await
+    {
+        eprintln!("Rocket failed to launch: {e}");
+    }
 }

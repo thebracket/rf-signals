@@ -22,7 +22,7 @@ pub fn signalmap_tile(
     link_budget: f64,
 ) -> Vec<u8> {
     let mut image_data = vec![0u8; TILE_SIZE as usize * TILE_SIZE as usize * 4];
-    let wisp_reader = WISP.read();
+    let wisp_reader = WISP.read().unwrap();
 
     let points = lat_lon_tile(swlat, swlon, nelat, nelon, TILE_SIZE as usize);
     points.iter().for_each(|(x, y, p)| {
@@ -83,7 +83,7 @@ pub fn signalmap_tile(
     let mut w = Cursor::new(Vec::new());
     {
         let mut encoder = png::Encoder::new(&mut w, TILE_SIZE as _, TILE_SIZE as _);
-        encoder.set_color(png::ColorType::RGBA);
+        encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
         writer.write_image_data(&image_data).unwrap();
@@ -127,7 +127,7 @@ pub fn signalmap_detail(
     heat_path: &str,
 ) -> Vec<u8> {
     let mut image_data = vec![0u8; DETAIL_SIZE as usize * DETAIL_SIZE as usize * 4];
-    let wisp_reader = WISP.read();
+    let wisp_reader = WISP.read().unwrap();
     let cpe_height = 3.0;
     let link_budget = 52.0 + 19.0;
     let frequency = 3.6;
@@ -204,7 +204,7 @@ pub fn signalmap_detail(
     let mut w = Cursor::new(Vec::new());
     {
         let mut encoder = png::Encoder::new(&mut w, DETAIL_SIZE as _, DETAIL_SIZE as _);
-        encoder.set_color(png::ColorType::RGBA);
+        encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
         writer.write_image_data(&image_data).unwrap();
