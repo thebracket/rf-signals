@@ -1,5 +1,5 @@
 use geo_types::Point;
-use las::{point::Classification, Header, Read, Reader};
+use las::{point::Classification, Header, Reader};
 use proj::*;
 mod tile_writer;
 use rf_signal_algorithms::srtm::get_altitude;
@@ -8,6 +8,24 @@ use std::{collections::HashMap, fs::read_dir, path::Path};
 use tile_writer::*;
 
 const LIDAR_PATH: &str = "/home/herbert/lidar/";
+const POINT_BATCH_SIZE: u64 = 50_000;
+
+/// Streams points in batches so large LiDAR files don't need to be loaded
+/// into memory all at once. Return `false` from `f` to stop early.
+fn for_each_point(reader: &mut Reader, mut f: impl FnMut(las::Point) -> bool) -> las::Result<()> {
+    loop {
+        let points = reader.read_points(POINT_BATCH_SIZE)?;
+        if points.len() == 0 {
+            return Ok(());
+        }
+
+        for point in points.points().filter_map(Result::ok) {
+            if !f(point) {
+                return Ok(());
+            }
+        }
+    }
+}
 
 fn get_projection_string(header: &Header) -> Option<String> {
     let mut result = None;
@@ -68,56 +86,66 @@ fn main() {
                 };*/
 
                 let mut altitude_conversion = 0.3048;
-                reader
-                    .points()
-                    .filter(|p| p.is_ok())
-                    .map(|p| p.unwrap())
-                    .filter(|p| p.classification == Classification::Ground)
-                    .take(3)
-                    .for_each(|p| {
-                        let tmp = converter.convert(Point::new(p.x, p.y)).unwrap();
-                        let ll = LatLon::new(tmp.lat(), tmp.lng());
-                        let h = get_altitude(
-                            &ll,
-                            "/home/herbert/lidarserver/terrain"
-                        ).unwrap_or(Distance::with_meters(0)).as_meters();
-                        let margin = h / 10.0;
-                        if p.z >= h-margin && p.z <= h+margin {
-                            altitude_conversion = 1.0;
-                            println!("It appears to be in feet. Known height: {}m, found: {}m. Margin: {}", h, p.z * altitude_conversion as f64, margin);
-                        } else {
-                            altitude_conversion = 0.3048;
-                            println!("It appears to be in feet. Known height: {}m, found: {}m", h, p.z * altitude_conversion as f64);
-                        }
-                    });
+                let mut ground_points_found = 0;
+                for_each_point(&mut reader, |p| {
+                    if p.classification != Classification::Ground {
+                        return true;
+                    }
 
-                reader
-                    .points()
-                    .filter(|p| p.is_ok())
-                    .map(|p| p.unwrap())
-                    .for_each(|p| {
-                        let tmp = converter.convert(Point::new(p.x, p.y)).unwrap();
-                        let filename = MapTile::get_tile_name(tmp.lat(), tmp.lng());
-                        if let Some(t) = tile_cache.get_mut(&filename) {
-                            store_altitude(
-                                t,
-                                tmp.lat(),
-                                tmp.lng(),
-                                &p.classification,
-                                (p.z as f32 * 10.0 * altitude_conversion) as u16,
-                            );
-                        } else {
-                            let mut tile = MapTile::get_tile(tmp.lat(), tmp.lng());
-                            store_altitude(
-                                &mut tile,
-                                tmp.lat(),
-                                tmp.lng(),
-                                &p.classification,
-                                (p.z as f32 * 10.0 * altitude_conversion) as u16,
-                            );
-                            tile_cache.insert(filename, tile);
-                        }
-                    });
+                    let tmp = converter.convert(Point::new(p.x, p.y)).unwrap();
+                    let ll = LatLon::new(tmp.y(), tmp.x());
+                    let h = get_altitude(&ll, "/home/herbert/lidarserver/terrain")
+                        .unwrap_or(Distance::with_meters(0))
+                        .as_meters();
+                    let margin = h / 10.0;
+                    if p.z >= h - margin && p.z <= h + margin {
+                        altitude_conversion = 1.0;
+                        println!(
+                            "It appears to be in meters. Known height: {}m, found: {}m. Margin: {}",
+                            h,
+                            p.z * altitude_conversion as f64,
+                            margin
+                        );
+                    } else {
+                        altitude_conversion = 0.3048;
+                        println!(
+                            "It appears to be in feet. Known height: {}m, found: {}m",
+                            h,
+                            p.z * altitude_conversion as f64
+                        );
+                    }
+
+                    ground_points_found += 1;
+                    ground_points_found < 3
+                })
+                .expect("Unable to read LAS points");
+
+                reader.seek(0).expect("Unable to rewind LAS file");
+                for_each_point(&mut reader, |p| {
+                    let tmp = converter.convert(Point::new(p.x, p.y)).unwrap();
+                    let filename = MapTile::get_tile_name(tmp.y(), tmp.x());
+                    if let Some(t) = tile_cache.get_mut(&filename) {
+                        store_altitude(
+                            t,
+                            tmp.y(),
+                            tmp.x(),
+                            &p.classification,
+                            (p.z as f32 * 10.0 * altitude_conversion) as u16,
+                        );
+                    } else {
+                        let mut tile = MapTile::get_tile(tmp.y(), tmp.x());
+                        store_altitude(
+                            &mut tile,
+                            tmp.y(),
+                            tmp.x(),
+                            &p.classification,
+                            (p.z as f32 * 10.0 * altitude_conversion) as u16,
+                        );
+                        tile_cache.insert(filename, tile);
+                    }
+                    true
+                })
+                .expect("Unable to read LAS points");
                 tile_cache.iter().for_each(|(_, v)| {
                     v.save();
                     v.save_png();

@@ -100,11 +100,11 @@ If you want to use this yourself, there's a few steps to get going.
 * You need LiDAR `.las` files for your coverage area. Your county assessor, or state land-grant university probably has them. For Missouri, I obtain them from [MSDIS](https://msdis.maps.arcgis.com/apps/View/index.html?appid=276d7a04beef4bb2820a13b12a144598). You should be able to use any LiDAR file, so long as it is in LAS format, and in a cartographic projection supported by Proj.
 * You'll probably want to have access to Linux (or Windows Services for Linux) for converting LiDAR files. PROJ is a bear to get running in Rust on Windows.
 * You need a Google Maps API key.
-* Rocket requires that you run rust in `nightly` mode.
+* Rust 1.88 or newer (stable). Rocket 0.5 no longer requires nightly Rust.
 
 ## Initial Setup
 
-1. Make sure you have a fully working Rust installation, along with a C++ and Clang build chain working.
+1. Make sure you have a fully working Rust installation, along with the PROJ development libraries.
 2. Clone this project (with `git clone`) to a directory on your computer.
 3. Setup a directory that you want to use to store `bheat` files.
 4. Make sure you know where you put your `hgt` and `las` files.

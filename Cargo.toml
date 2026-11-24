@@ -2,7 +2,8 @@
 name = "rf-signals"
 version = "0.1.0"
 authors = ["Herbert Wolverson <herberticus@gmail.com>"]
-edition = "2018"
+edition = "2021"
+rust-version = "1.88"
 description = "Rust wrapper for https://github.com/Cloud-RF/Signal-Server signal algorithms."
 readme = "README.md"
 license = "GPL2"
@@ -13,8 +14,9 @@ license = "GPL2"
 rf-signal-algorithms = { path = "rf-signal-algorithms/" }
 
 [workspace]
-members = [ 
+members = [
     "rf-signal-algorithms",
     "bracket-heat",
     "terrain-cooker",
 ]
+resolver = "2"

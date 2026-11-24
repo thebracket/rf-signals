@@ -24,36 +24,24 @@ impl LatLon {
 
     /// Retrieve Latitude
     pub fn lat(&self) -> f64 {
-        self.0.lat()
+        self.0.y()
     }
 
     /// Retrieve Longitude
     pub fn lon(&self) -> f64 {
-        self.0.lng()
-    }
-
-    /// Retrieve a geo point in Radians
-    pub fn to_radians_point(&self) -> Point<f64> {
-        const DEG_RAD: f64 = 1.74532925199e-02;
-        Point::new(self.0.lat() * DEG_RAD, self.0.lng() * DEG_RAD)
-    }
-
-    /// Create from a geo point in Radians
-    pub fn from_radians_point(pt: &Point<f64>) -> Self {
-        const DEG_RAD: f64 = 1.74532925199e-02;
-        LatLon(Point::new(pt.lat() / DEG_RAD, pt.lng() / DEG_RAD))
+        self.0.x()
     }
 
     pub fn floor(&self) -> LatLon {
-        LatLon::new(self.0.lat().floor(), self.0.lng().floor())
+        LatLon::new(self.0.y().floor(), self.0.x().floor())
     }
 
     /// Calculate the SRTM tile containing this point
     pub fn to_srtm1(&self) -> SrtmTile {
         let floor = self.floor();
         SrtmTile::Srtm1 {
-            lat: floor.0.lat() as i16,
-            lon: floor.0.lng() as i16,
+            lat: floor.0.y() as i16,
+            lon: floor.0.x() as i16,
         }
     }
 
@@ -61,8 +49,8 @@ impl LatLon {
     pub fn to_srtm3(&self) -> SrtmTile {
         let floor = self.floor();
         SrtmTile::Srtm3 {
-            lat: floor.0.lat() as i16,
-            lon: floor.0.lng() as i16,
+            lat: floor.0.y() as i16,
+            lon: floor.0.x() as i16,
         }
     }
 

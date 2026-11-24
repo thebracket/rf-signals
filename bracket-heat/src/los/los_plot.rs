@@ -22,7 +22,7 @@ pub fn los_plot(
     frequency: Frequency,
     heat_path: &str,
 ) -> LineOfSightPlot {
-    let reader = crate::WISP.read();
+    let reader = crate::WISP.read().unwrap();
     let t = &reader.towers[tower_index];
     let d = haversine_distance(pos, &LatLon::new(t.lat, t.lon));
     let base_tower_height = heat_altitude(t.lat, t.lon, heat_path)
