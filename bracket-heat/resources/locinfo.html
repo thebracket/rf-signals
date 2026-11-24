@@ -6,77 +6,94 @@
 		<style>
 			body { margin: 0; }
 		</style>
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js",
+					"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
+				}
+			}
+		</script>
 	</head>
 	<body>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
-        <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
-		<script>
-            function init(data) {
-                const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+		<script type="module">
+			import * as THREE from 'three';
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-                const renderer = new THREE.WebGLRenderer();
-                renderer.setSize( window.innerWidth, window.innerHeight );
-                document.body.appendChild( renderer.domElement );
-                var controls = new THREE.OrbitControls (camera, renderer.domElement);
+			function init(data) {
+				const scene = new THREE.Scene();
+				const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-                // Make the terrain
-                const material = new THREE.MeshLambertMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
-                var plane = new THREE.PlaneGeometry( 10, 10, data.width-1, data.height-1);
-                var vertices = [];
-                var i = 0;
-                for (var y=0; y<data.height; y++) {
-                    for (var x=0; x<data.width; x++) {
-                        vertices.push(x - (data.width / 2));
-                        vertices.push(data.terrain[i]);
-                        vertices.push(y - (data.height / 2));
-                        i++;
-                    }
-                }
-                plane.setAttribute('position', new THREE.BufferAttribute( new Float32Array(vertices), 3));
-                plane.computeVertexNormals();
-                const mesh = new THREE.Mesh( plane, material );
-                scene.add( mesh );
+				const renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( Math.min( window.devicePixelRatio, 2 ) );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+				const controls = new OrbitControls( camera, renderer.domElement );
 
-                // Make the clutter
-                const cmaterial = new THREE.MeshLambertMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-                var cplane = new THREE.PlaneGeometry( 10, 10, data.width-1, data.height-1);
-                var vertices = [];
-                var i = 0;
-                for (var y=0; y<data.height; y++) {
-                    for (var x=0; x<data.width; x++) {
-                        vertices.push(x - (data.width / 2));
-                        vertices.push(data.clutter[i]);
-                        vertices.push(y - (data.height / 2));
-                        i++;
-                    }
-                }
-                cplane.setAttribute('position', new THREE.BufferAttribute( new Float32Array(vertices), 3));
-                cplane.computeVertexNormals();
-                const cmesh = new THREE.Mesh( cplane, cmaterial );
-                scene.add( cmesh );
+				// Make the terrain
+				const material = new THREE.MeshLambertMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
+				const plane = new THREE.PlaneGeometry( 10, 10, data.width-1, data.height-1);
+				const vertices = [];
+				let i = 0;
+				for (let y=0; y<data.height; y++) {
+					for (let x=0; x<data.width; x++) {
+						vertices.push(x - (data.width / 2));
+						vertices.push(data.terrain[i]);
+						vertices.push(y - (data.height / 2));
+						i++;
+					}
+				}
+				plane.setAttribute('position', new THREE.BufferAttribute( new Float32Array(vertices), 3));
+				plane.computeVertexNormals();
+				const mesh = new THREE.Mesh( plane, material );
+				scene.add( mesh );
 
-                const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-                directionalLight.position.x = 0.5;
-                directionalLight.position.y = 1;
-                directionalLight.position.z = 0.5;
-                scene.add( directionalLight );
+				// Make the clutter
+				const cmaterial = new THREE.MeshLambertMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+				const cplane = new THREE.PlaneGeometry( 10, 10, data.width-1, data.height-1);
+				const clutterVertices = [];
+				i = 0;
+				for (let y=0; y<data.height; y++) {
+					for (let x=0; x<data.width; x++) {
+						clutterVertices.push(x - (data.width / 2));
+						clutterVertices.push(data.clutter[i]);
+						clutterVertices.push(y - (data.height / 2));
+						i++;
+					}
+				}
+				cplane.setAttribute('position', new THREE.BufferAttribute( new Float32Array(clutterVertices), 3));
+				cplane.computeVertexNormals();
+				const cmesh = new THREE.Mesh( cplane, cmaterial );
+				scene.add( cmesh );
 
-                camera.position.z = 10.0;
+				const directionalLight = new THREE.DirectionalLight( 0xffffff, 3 );
+				directionalLight.position.x = 0.5;
+				directionalLight.position.y = 1;
+				directionalLight.position.z = 0.5;
+				scene.add( directionalLight );
+				scene.add( new THREE.AmbientLight( 0xffffff, 1 ) );
 
-                function animate() {
-                    controls.update();
-                    requestAnimationFrame( animate );
-                    renderer.render( scene, camera );
-                }
-                animate();
-            }
+				camera.position.set( 10, 10, 10 );
+				controls.target.set( 0, 0, 0 );
+				controls.update();
 
-            $.get("/3d/38.947775/-92.323385", (data) => {
-                console.log(data);
-                init(data);
-            });
+				window.addEventListener('resize', () => {
+					camera.aspect = window.innerWidth / window.innerHeight;
+					camera.updateProjectionMatrix();
+					renderer.setSize( window.innerWidth, window.innerHeight );
+				});
+
+				function animate() {
+					controls.update();
+					requestAnimationFrame( animate );
+					renderer.render( scene, camera );
+				}
+				animate();
+			}
+
+			const response = await fetch("/3d/38.947775/-92.323385");
+			const data = await response.json();
+			init(data);
 		</script>
 	</body>
 </html>
