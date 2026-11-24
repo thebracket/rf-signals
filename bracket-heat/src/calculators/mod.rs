@@ -105,7 +105,12 @@ fn evaluate_wireless_service(
         let mut cpe_height = 0.25;
         let mut last_mode = String::new();
         while cpe_height < 3.6 && !found_los {
-            let (loss, mode) = itm_eval(cpe_height, &los_path, service);
+            let (loss, mode) = match itm_eval(cpe_height, &los_path, service) {
+                Some(result) => result,
+                // Invalid terrain data (for example, a missing altitude along the path).
+                // There's no valid result to report for this service, so skip it.
+                None => return,
+            };
             let signal = service.link_budget_db - loss;
             let mut ok = true;
             if signal < -80.0 {
@@ -146,15 +151,16 @@ fn itm_eval(
     cpe_height: f64,
     path_as_distances: &Vec<f64>,
     service: &WirelessService,
-) -> (f64, String) {
-    // Setup an ITM terrain path and retrieve the data
+) -> Option<(f64, String)> {
+    // Setup an ITM terrain path and retrieve the data. If the terrain data isn't
+    // valid (such as a missing altitude), there's no result to calculate.
     let mut terrain_path = PTPPath::new(
         path_as_distances.clone(),
         service.height,
         Distance::with_meters(cpe_height),
         Distance::with_meters(1.0),
     )
-    .unwrap();
+    .ok()?;
 
     let lr = itwom_point_to_point(
         &mut terrain_path,
@@ -165,5 +171,28 @@ fn itm_eval(
         1,
     );
 
-    (lr.dbloss, lr.mode)
+    Some((lr.dbloss, lr.mode))
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn test_service() -> WirelessService {
+        WirelessService {
+            tower: "test".to_string(),
+            tower_pos: LatLon::new(0.0, 0.0),
+            name: "test".to_string(),
+            pos: LatLon::new(0.0, 0.0),
+            height: Distance::with_meters(10.0),
+            frequency: Frequency::with_mhz(5800.0),
+            link_budget_db: 100.0,
+            range: Distance::with_meters(1000.0),
+        }
+    }
+
+    #[test]
+    fn itm_eval_returns_none_for_invalid_terrain() {
+        assert!(itm_eval(0.25, &vec![0.0, 10.0], &test_service()).is_none());
+    }
 }
