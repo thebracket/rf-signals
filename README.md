@@ -99,7 +99,7 @@ If you want to use this yourself, there's a few steps to get going.
 * You'll need to obtain `.hgt` format data for your coverage area. These are the same files used by Splat! and Radio Mobile. You can also take various DEM files and convert them to HGT tile format. It supports all three popular resolutions of hgt file.
 * You need LiDAR `.las` files for your coverage area. Your county assessor, or state land-grant university probably has them. For Missouri, I obtain them from [MSDIS](https://msdis.maps.arcgis.com/apps/View/index.html?appid=276d7a04beef4bb2820a13b12a144598). You should be able to use any LiDAR file, so long as it is in LAS format, and in a cartographic projection supported by Proj.
 * You'll probably want to have access to Linux (or Windows Services for Linux) for converting LiDAR files. PROJ is a bear to get running in Rust on Windows.
-* You need a Google Maps API key.
+* You need a Google Maps JavaScript API key, supplied through the `GOOGLE_MAPS_API_KEY` environment variable.
 * Rust 1.88 or newer (stable). Rocket 0.5 no longer requires nightly Rust.
 
 ## Initial Setup
@@ -118,9 +118,31 @@ If you want to use this yourself, there's a few steps to get going.
 
 In your project directory, type `cd terrain-cooker`. Then run the conversion with `cargo run --release`. It will evaluate all `.las` files in the LIDAR folder, reading `.hgt` files from your heightmap directory and spit out `bheat` tiles. BHeat tiles start with a heightmap derived from your `hgt` files - and then adjust ground height and add terrain clutter heights from LiDAR files. This is an additive process: you can re-run it with new LiDAR data whenever you want, and the new data will be merged in.
 
-## Add in your Google maps key
+## Set your Google Maps key
 
-In `bracket-heat`, create a file named `gmap_key.txt` and paste your Google Maps API key into it. I didn't want to give you mine!
+Bracket-Heat reads your Google Maps JavaScript API key from the
+`GOOGLE_MAPS_API_KEY` environment variable when it starts. Set it before
+launching the server:
+
+~~~bash
+export GOOGLE_MAPS_API_KEY="your-google-maps-api-key"
+cd bracket-heat
+cargo run --release
+~~~
+
+On Windows PowerShell, use:
+
+~~~powershell
+$env:GOOGLE_MAPS_API_KEY = "your-google-maps-api-key"
+~~~
+
+If the variable is missing or empty, the server exits with an error explaining
+what needs to be set.
+
+Create and restrict your key in the
+[Google Cloud Console](https://console.cloud.google.com/google/maps-apis/credentials).
+Because the Maps JavaScript API key is sent to the browser, restrict it to your
+site's HTTP referrers and enable only the APIs you use.
 
 ## Setup your WISP Information
 
