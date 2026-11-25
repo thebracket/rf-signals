@@ -79,7 +79,8 @@ impl PTPPath {
         receive_height: Distance,
         step_size: Distance,
     ) -> Result<Self, PTPError> {
-        let total_distance: f64 = elevations.len() as f64 * step_size.as_meters();
+        let point_count = elevations.len();
+        let total_distance: f64 = point_count.saturating_sub(1) as f64 * step_size.as_meters();
         if total_distance > 2000000.0 {
             return Err(PTPError::DistanceTooLong);
         }
@@ -98,10 +99,10 @@ impl PTPPath {
             receive_height,
         };
 
-        // Index 0 is the number of elements, next up is the distance per step
+        // ITWOM's header is [number of points - 1, distance per step, elevations...].
         path.elevations.insert(0, step_size.as_meters());
         path.elevations
-            .insert(0, path.elevations.len() as f64 - 3.0);
+            .insert(0, point_count.saturating_sub(1) as f64);
 
         Ok(path)
     }
@@ -272,6 +273,64 @@ mod test {
             .err(),
             Some(PTPError::AltitudeTooHigh)
         );
+    }
+
+    #[test]
+    fn path_header_uses_num_points_minus_one() {
+        let path = PTPPath::new(
+            vec![10.0, 20.0, 30.0, 40.0],
+            Distance::with_meters(10.0),
+            Distance::with_meters(2.0),
+            Distance::with_meters(5.0),
+        )
+        .unwrap();
+
+        assert_eq!(path.elevations[0], 3.0);
+        assert_eq!(path.elevations[1], 5.0);
+        assert_eq!(&path.elevations[2..], &[10.0, 20.0, 30.0, 40.0]);
+    }
+
+    #[test]
+    fn shortest_path_keeps_the_receiver_sample() {
+        let path = PTPPath::new(
+            vec![10.0, 20.0],
+            Distance::with_meters(30.0),
+            Distance::with_meters(1.0),
+            Distance::with_meters(1.0),
+        )
+        .unwrap();
+
+        assert_eq!(path.elevations, vec![1.0, 1.0, 10.0, 20.0]);
+    }
+
+    #[test]
+    fn itwom_uses_the_final_terrain_sample() {
+        let flat_path = vec![10.0; 200];
+        let mut rising_path = flat_path.clone();
+        rising_path[199] = 200.0;
+
+        let evaluate = |elevations| {
+            let mut path = PTPPath::new(
+                elevations,
+                Distance::with_meters(30.0),
+                Distance::with_meters(2.0),
+                Distance::with_meters(10.0),
+            )
+            .unwrap();
+
+            itwom_point_to_point(
+                &mut path,
+                PTPClimate::default(),
+                Frequency::with_mhz(5800.0),
+                0.5,
+                0.5,
+                1,
+            )
+        };
+
+        let flat = evaluate(flat_path);
+        let rising = evaluate(rising_path);
+        assert_ne!(flat.dbloss, rising.dbloss);
     }
 
     #[test]
