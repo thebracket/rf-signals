@@ -8,10 +8,29 @@ use rf_signal_algorithms::{Frequency, LatLon};
 use rocket::{fs::NamedFile, get, http::ContentType, response::content, routes, serde::json::Json};
 use std::sync::{LazyLock, RwLock};
 
-// Please save your API key in gmap_key.txt in the `resources` directory.
-const GOOGLE_MAPS_API_KEY: &str = include_str!("../resources/gmap_key.txt");
+const GOOGLE_MAPS_API_KEY_ENV: &str = "GOOGLE_MAPS_API_KEY";
 const INDEX_HTML: &str = include_str!("../resources/index.html");
 const ADVISOR_HTML: &str = include_str!("../resources/advisor.html");
+
+fn google_maps_api_key_from(value: Option<String>) -> Result<String, String> {
+    value
+        .map(|key| key.trim().to_string())
+        .filter(|key| !key.is_empty())
+        .ok_or_else(|| {
+            format!(
+                "ERROR: {GOOGLE_MAPS_API_KEY_ENV} is not set or is empty.\n\n\
+                 Bracket-Heat requires a Google Maps JavaScript API key. Set the\n\
+                 {GOOGLE_MAPS_API_KEY_ENV} environment variable before starting the server:\n\n\
+                 \x20   export {GOOGLE_MAPS_API_KEY_ENV}=\"your-google-maps-api-key\"\n\n\
+                 Create and restrict a key at \
+                 https://console.cloud.google.com/google/maps-apis/credentials"
+            )
+        })
+}
+
+fn google_maps_api_key() -> Result<String, String> {
+    google_maps_api_key_from(std::env::var(GOOGLE_MAPS_API_KEY_ENV).ok())
+}
 
 // Data Storage Holders
 static INDEX_FINAL: LazyLock<RwLock<String>> = LazyLock::new(|| RwLock::new(String::new()));
@@ -176,13 +195,18 @@ fn los_plot(
 
 #[rocket::main]
 async fn main() {
+    let gmap_key = google_maps_api_key().unwrap_or_else(|error| {
+        eprintln!("{error}");
+        std::process::exit(1);
+    });
+
     let wisp_def = load_wisp();
     let listen_port = wisp_def.listen_port;
 
     // Do some replace magic to place the correct key and version in the HTML
     *INDEX_FINAL.write().unwrap() = INDEX_HTML
         .replace("_BANNER_", "Bracket-Heat 0.1")
-        .replace("_GMAPKEY_", &GOOGLE_MAPS_API_KEY.replace("\n", ""))
+        .replace("_GMAPKEY_", &gmap_key)
         .replace("_CENTER_LAT_", &wisp_def.center.0.to_string())
         .replace("_CENTER_LON_", &wisp_def.center.1.to_string())
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
@@ -190,7 +214,7 @@ async fn main() {
 
     *ADVISOR_FINAL.write().unwrap() = ADVISOR_HTML
         .replace("_BANNER_", "Bracket-Heat 0.1")
-        .replace("_GMAPKEY_", &GOOGLE_MAPS_API_KEY.replace("\n", ""))
+        .replace("_GMAPKEY_", &gmap_key)
         .replace("_CENTER_LAT_", &wisp_def.center.0.to_string())
         .replace("_CENTER_LON_", &wisp_def.center.1.to_string())
         .replace("_MAP_ZOOM_", &wisp_def.map_zoom.to_string())
@@ -224,5 +248,26 @@ async fn main() {
         .await
     {
         eprintln!("Rocket failed to launch: {e}");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn accepts_and_trims_a_google_maps_key() {
+        let key = google_maps_api_key_from(Some("  test-key\n".to_string())).unwrap();
+        assert_eq!(key, "test-key");
+    }
+
+    #[test]
+    fn missing_or_empty_key_has_a_clear_error() {
+        for value in [None, Some(String::new()), Some("   \n".to_string())] {
+            let error = google_maps_api_key_from(value).unwrap_err();
+            assert!(error.contains("GOOGLE_MAPS_API_KEY"));
+            assert!(error.contains("environment variable"));
+            assert!(error.contains("export GOOGLE_MAPS_API_KEY"));
+        }
     }
 }
